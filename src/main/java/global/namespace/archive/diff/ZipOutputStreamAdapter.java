@@ -10,7 +10,6 @@ import org.apache.commons.compress.archivers.ArchiveEntry;
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
 import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream;
 
-import javax.annotation.WillCloseWhenClosed;
 import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -26,7 +25,7 @@ class ZipOutputStreamAdapter implements ArchiveFileOutput {
 
     private final ZipArchiveOutputStream zip;
 
-    ZipOutputStreamAdapter(final @WillCloseWhenClosed ZipArchiveOutputStream zip) { this.zip = requireNonNull(zip); }
+    ZipOutputStreamAdapter(final ZipArchiveOutputStream zip) { this.zip = requireNonNull(zip); }
 
     @Override
     public ArchiveEntry entry(String name) { return new ZipArchiveEntry(name); }

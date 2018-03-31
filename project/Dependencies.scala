@@ -20,11 +20,8 @@ object Dependencies {
   private val FunIoVersion = "0.9.2"
 
   val CommonsCompress: ModuleID = "org.apache.commons" % "commons-compress" % "1.16.1"
-  val Annotations: ModuleID = "com.google.code.findbugs" % "annotations" % "3.0.0"
   val FunIoBios: ModuleID = "global.namespace.fun-io" % "fun-io-bios" % FunIoVersion
   val FunIoJaxb: ModuleID = "global.namespace.fun-io" % "fun-io-jaxb" % FunIoVersion
-  val FunIoScalaApi: ModuleID = "global.namespace.fun-io" %% "fun-io-scala-api" % FunIoVersion
-  val MockitoCore: ModuleID = "org.mockito" % "mockito-core" % "2.17.0"
   val Scalacheck: ModuleID = "org.scalacheck" %% "scalacheck" % "1.13.5"
   val Scalatest: ModuleID = "org.scalatest" %% "scalatest" % "3.0.5"
 

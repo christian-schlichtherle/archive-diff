@@ -7,8 +7,6 @@ package global.namespace.archive.diff.model;
 import global.namespace.fun.io.api.Sink;
 import global.namespace.fun.io.api.Source;
 
-import javax.annotation.CheckForNull;
-import javax.annotation.Nullable;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.annotation.XmlAccessType;
@@ -19,13 +17,13 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import java.io.Serializable;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.Collection;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 import static global.namespace.fun.io.jaxb.JAXB.xmlCodec;
 import static java.util.Collections.*;
+import static java.util.Objects.requireNonNull;
+import static java.util.Optional.empty;
+import static java.util.Optional.of;
 
 /**
  * A Value Object which represents the meta data in a delta-archive file.
@@ -35,6 +33,7 @@ import static java.util.Collections.*;
  *
  * @author Christian Schlichtherle
  */
+@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 @XmlRootElement(name = "delta")
 @XmlAccessorType(XmlAccessType.FIELD)
 public final class DeltaModel implements Serializable {
@@ -51,14 +50,13 @@ public final class DeltaModel implements Serializable {
     private final String algorithm;
 
     @XmlAttribute
-    private final @CheckForNull Integer numBytes;
+    private final Integer numBytes;
 
     @XmlJavaTypeAdapter(EntryNameAndTwoDigestsMapAdapter.class)
     private final Map<String, EntryNameAndTwoDigestValues> changed;
 
     @XmlJavaTypeAdapter(EntryNameAndDigestMapAdapter.class)
-    private final Map<String, EntryNameAndDigestValue>
-            unchanged, added, removed;
+    private final Map<String, EntryNameAndDigestValue> unchanged, added, removed;
 
     /** Required for JAXB. */
     @SuppressWarnings("unused")
@@ -69,9 +67,10 @@ public final class DeltaModel implements Serializable {
         unchanged = added = removed = emptyMap();
     }
 
-    DeltaModel(final Builder b) {
-        this.algorithm = b.messageDigest.getAlgorithm();
-        this.numBytes = lengthBytes(b.messageDigest);
+    private DeltaModel(final Builder b) {
+        final MessageDigest digest = b.messageDigest.get();
+        this.algorithm = digest.getAlgorithm();
+        this.numBytes = lengthBytes(digest).orElse(null);
         this.changed = changedMap(b.changed);
         this.unchanged = unchangedMap(b.unchanged);
         this.added = unchangedMap(b.added);
@@ -81,7 +80,7 @@ public final class DeltaModel implements Serializable {
     /** Returns a new builder for a delta model. */
     public static Builder builder() { return new Builder(); }
 
-    private static @Nullable Integer lengthBytes(final MessageDigest digest) {
+    private static Optional<Integer> lengthBytes(final MessageDigest digest) {
         final MessageDigest clone;
         try {
             clone = MessageDigest.getInstance(digest.getAlgorithm());
@@ -89,9 +88,9 @@ public final class DeltaModel implements Serializable {
             throw new AssertionError(e);
         }
         if (clone.getDigestLength() == digest.getDigestLength()) {
-            return null;
+            return empty();
         } else {
-            return digest.getDigestLength();
+            return of(digest.getDigestLength());
         }
     }
 
@@ -122,11 +121,10 @@ public final class DeltaModel implements Serializable {
 
     /**
      * Returns the message digest byte length.
-     * This is {@code null} if and only if the byte length of the message
-     * digest used to build this delta model is the default value for the
-     * algorithm.
+     * This is empty if and only if the byte length of the message digest used to build this delta model is the default
+     * value for the algorithm.
      */
-    public @Nullable Integer digestByteLength() { return numBytes; }
+    public Optional<Integer> digestByteLength() { return Optional.ofNullable(numBytes); }
 
     /**
      * Returns a collection of the entry name and two message digests for the
@@ -258,42 +256,34 @@ public final class DeltaModel implements Serializable {
     })
     public static final class Builder {
 
-        @CheckForNull MessageDigest messageDigest;
-        @CheckForNull Collection<EntryNameAndTwoDigestValues> changed = emptyList();
-        @CheckForNull Collection<EntryNameAndDigestValue>
-                unchanged = emptyList(),
-                added = emptyList(),
-                removed = emptyList();
+        Optional<MessageDigest> messageDigest = empty();
+        Collection<EntryNameAndTwoDigestValues> changed = emptyList();
+        Collection<EntryNameAndDigestValue> unchanged = emptyList(), added = emptyList(), removed = emptyList();
 
         Builder() { }
 
-        public Builder messageDigest(
-                final @Nullable MessageDigest messageDigest) {
-            this.messageDigest = messageDigest;
+        public Builder messageDigest(final MessageDigest messageDigest) {
+            this.messageDigest = of(messageDigest);
             return this;
         }
 
-        public Builder changedEntries(
-                final @Nullable Collection<EntryNameAndTwoDigestValues> changed) {
-            this.changed = changed;
+        public Builder changedEntries(final Collection<EntryNameAndTwoDigestValues> changed) {
+            this.changed = requireNonNull(changed);
             return this;
         }
 
-        public Builder unchangedEntries(
-                final @Nullable Collection<EntryNameAndDigestValue> unchanged) {
-            this.unchanged = unchanged;
+        public Builder unchangedEntries(final Collection<EntryNameAndDigestValue> unchanged) {
+            this.unchanged = requireNonNull(unchanged);
             return this;
         }
 
-        public Builder addedEntries(
-                final @Nullable Collection<EntryNameAndDigestValue> added) {
-            this.added = added;
+        public Builder addedEntries(final Collection<EntryNameAndDigestValue> added) {
+            this.added = requireNonNull(added);
             return this;
         }
 
-        public Builder removedEntries(
-                final @Nullable Collection<EntryNameAndDigestValue> removed) {
-            this.removed = removed;
+        public Builder removedEntries(final Collection<EntryNameAndDigestValue> removed) {
+            this.removed = requireNonNull(removed);
             return this;
         }
 

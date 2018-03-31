@@ -22,12 +22,9 @@ lazy val root: Project = project
   .settings(javaLibrarySettings)
   .settings(
     libraryDependencies ++= Seq(
-      Annotations,
       CommonsCompress,
       FunIoBios % Test,
       FunIoJaxb,
-      FunIoScalaApi % Test,
-      MockitoCore % Test,
       Scalacheck % Test,
       Scalatest % Test
     ),

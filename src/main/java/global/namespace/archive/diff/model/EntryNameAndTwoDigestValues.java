@@ -4,7 +4,6 @@
  */
 package global.namespace.archive.diff.model;
 
-import javax.annotation.concurrent.Immutable;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
@@ -17,7 +16,6 @@ import static java.util.Objects.requireNonNull;
  *
  * @author Christian Schlichtherle
  */
-@Immutable
 @XmlAccessorType(XmlAccessType.FIELD)
 public final class EntryNameAndTwoDigestValues implements Serializable {
 

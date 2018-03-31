@@ -10,7 +10,6 @@ import org.apache.commons.compress.archivers.ArchiveEntry;
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
 import org.apache.commons.compress.archivers.zip.ZipFile;
 
-import javax.annotation.WillCloseWhenClosed;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Enumeration;
@@ -28,7 +27,7 @@ final class ZipFileAdapter implements ArchiveFileInput {
 
     private final ZipFile zip;
 
-    ZipFileAdapter(final @WillCloseWhenClosed ZipFile input) { this.zip = requireNonNull(input); }
+    ZipFileAdapter(final ZipFile input) { this.zip = requireNonNull(input); }
 
     @Override
     public Iterator<ArchiveEntry> iterator() {

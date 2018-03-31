@@ -9,8 +9,6 @@ import org.apache.commons.compress.archivers.ArchiveEntry;
 import org.apache.commons.compress.archivers.jar.JarArchiveEntry;
 import org.apache.commons.compress.archivers.jar.JarArchiveOutputStream;
 
-import javax.annotation.WillCloseWhenClosed;
-
 /**
  * Adapts a {@link JarArchiveOutputStream} to an {@link ArchiveFileOutput}.
  *
@@ -18,7 +16,7 @@ import javax.annotation.WillCloseWhenClosed;
  */
 final class JarOutputStreamAdapter extends ZipOutputStreamAdapter {
 
-    JarOutputStreamAdapter(@WillCloseWhenClosed JarArchiveOutputStream jar) { super(jar); }
+    JarOutputStreamAdapter(JarArchiveOutputStream jar) { super(jar); }
 
     @Override
     public ArchiveEntry entry(String name) { return new JarArchiveEntry(name); }
