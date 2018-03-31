@@ -2,6 +2,50 @@
 
 Diffs and patches archive files.
 
+## Usage
+
+### Diffing two JAR files and generating a delta JAR file
+
+```java
+import java.io.File;
+
+import static global.namespace.archive.diff.Archive.*;
+
+File first = ...;
+File second = ...;
+File delta = ...;
+diff().first(jar(first)).second(jar(second)).to(jar(delta));
+```
+
+### Patching a JAR file from a generated delta JAR file
+
+```java
+import java.io.File;
+
+import static global.namespace.archive.diff.Archive.*;
+
+File first = ...;
+File second = ...;
+File delta = ...;
+patch().first(jar(first)).delta(jar(delta)).to(jar(second));
+```
+
+### Diffing two ZIP files and computing a delta model
+
+Maybe you just want to explore the differences, but not generate a delta archive file:
+
+```java
+import java.io.File;
+
+import global.namespace.archive.diff.model.*;
+
+import static global.namespace.archive.diff.Archive.*;
+
+File first = ...;
+File second = ...;
+DeltaModel model = diff().first(zip(first)).second(zip(second)).deltaModel();
+```
+
 [Apache Commons Compress]: https://commons.apache.org/proper/commons-compress/
 [JAXB]: https://javaee.github.io/jaxb-v2/
 [XZ for Java]: https://tukaani.org/xz/
