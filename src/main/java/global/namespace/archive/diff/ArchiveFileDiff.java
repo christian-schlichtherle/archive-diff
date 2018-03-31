@@ -24,6 +24,10 @@ import java.util.Optional;
 import java.util.TreeMap;
 import java.util.regex.Pattern;
 
+import static global.namespace.archive.diff.Archive.entrySink;
+import static global.namespace.archive.diff.Archive.entrySource;
+import static global.namespace.archive.diff.Copy.copy;
+
 /**
  * Compares a first archive file to a second archive file and generates a delta archive file.
  *
@@ -53,9 +57,9 @@ abstract class ArchiveFileDiff {
         return firstSource().applyReader(firstInput -> secondSource().applyReader(secondInput -> function.apply(
                 new Engine() {
 
-                    public ArchiveFileInput firstInput() { return firstInput; }
+                    ArchiveFileInput firstInput() { return firstInput; }
 
-                    public ArchiveFileInput secondInput() { return secondInput; }
+                    ArchiveFileInput secondInput() { return secondInput; }
                 }
         )));
     }
@@ -90,17 +94,17 @@ abstract class ArchiveFileDiff {
                                 deltaZipEntry.setCompressedSize(size);
                                 deltaZipEntry.setCrc(secondZipEntry.getCrc());
                             }
-                            Copy.copy(secondSource(secondEntry), deltaSink(deltaEntry));
+                            copy(secondSource(secondEntry), deltaSink(deltaEntry));
                         }
                     }
                 }
 
                 private Source secondSource(ArchiveEntry secondEntry) {
-                    return ArchiveEntrySource.create(secondEntry, secondInput());
+                    return entrySource(secondEntry, secondInput());
                 }
 
                 private Sink deltaSink(ArchiveEntry deltaEntry) {
-                    return ArchiveEntrySink.create(deltaEntry, deltaOutput);
+                    return entrySink(deltaEntry, deltaOutput);
                 }
 
                 private ArchiveEntry deltaEntry(String name) { return deltaOutput.entry(name); }
@@ -128,9 +132,9 @@ abstract class ArchiveFileDiff {
                         continue;
                     }
                     final Optional<ArchiveEntry> secondEntry = secondInput().entry(firstEntry.getName());
-                    final ArchiveEntrySource firstSource = ArchiveEntrySource.create(firstEntry, firstInput());
+                    final ArchiveEntrySource firstSource = entrySource(firstEntry, firstInput());
                     if (secondEntry.isPresent()) {
-                        final ArchiveEntrySource secondSource = ArchiveEntrySource.create(secondEntry.get(), secondInput());
+                        final ArchiveEntrySource secondSource = entrySource(secondEntry.get(), secondInput());
                         assembly.visitEntriesInBothFiles(firstSource, secondSource);
                     } else {
                         assembly.visitEntryInFirstFile(firstSource);
@@ -143,7 +147,7 @@ abstract class ArchiveFileDiff {
                     }
                     final Optional<ArchiveEntry> firstEntry = firstInput().entry(secondEntry.getName());
                     if (!firstEntry.isPresent()) {
-                        final ArchiveEntrySource secondSource = ArchiveEntrySource.create(secondEntry, secondInput());
+                        final ArchiveEntrySource secondSource = entrySource(secondEntry, secondInput());
                         assembly.visitEntryInSecondFile(secondSource);
                     }
                 }

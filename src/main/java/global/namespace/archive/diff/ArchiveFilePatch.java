@@ -22,6 +22,11 @@ import java.security.DigestOutputStream;
 import java.security.MessageDigest;
 import java.util.Optional;
 
+import static global.namespace.archive.diff.Archive.entrySource;
+import static global.namespace.archive.diff.Copy.copy;
+import static global.namespace.archive.diff.model.DeltaModel.ENTRY_NAME;
+import static global.namespace.archive.diff.model.DeltaModel.decodeFromXml;
+
 /**
  * Patches a first archive file to a second archive file using a delta archive file.
  *
@@ -142,8 +147,8 @@ abstract class ArchiveFilePatch {
                         }
                         final Optional<ArchiveEntry> entry = input().entry(name);
                         try {
-                            Copy.copy(
-                                    ArchiveEntrySource.create(entry.orElseThrow(() ->
+                            copy(
+                                    entrySource(entry.orElseThrow(() ->
                                             ioException(new MissingArchiveEntryException(name))), input()),
                                     new MyArchiveEntrySink(entryNameAndDigestValue)
                             );
@@ -188,13 +193,12 @@ abstract class ArchiveFilePatch {
         }
 
         DeltaModel loadModel() throws Exception {
-            return DeltaModel.decodeFromXml(ArchiveEntrySource.create(modelArchiveEntry(), deltaInput()));
+            return decodeFromXml(entrySource(modelArchiveEntry(), deltaInput()));
         }
 
         ArchiveEntry modelArchiveEntry() throws Exception {
-            final String name = DeltaModel.ENTRY_NAME;
-            return deltaInput().entry(name).orElseThrow(() ->
-                    new InvalidDeltaArchiveFileException(new MissingArchiveEntryException(name)));
+            return deltaInput().entry(ENTRY_NAME).orElseThrow(() ->
+                    new InvalidDeltaArchiveFileException(new MissingArchiveEntryException(ENTRY_NAME)));
         }
     }
 }
