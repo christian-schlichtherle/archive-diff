@@ -19,7 +19,7 @@ import static java.util.Objects.requireNonNull;
  */
 @Immutable
 @XmlAccessorType(XmlAccessType.FIELD)
-public final class EntryNameAndDigest implements Serializable {
+public final class EntryNameAndDigestValue implements Serializable {
 
     private static final long serialVersionUID = 0L;
 
@@ -27,31 +27,34 @@ public final class EntryNameAndDigest implements Serializable {
     private final String name, digest;
 
     /** Required for JAXB. */
-    private EntryNameAndDigest() { name = digest = ""; }
+    private EntryNameAndDigestValue() { name = digest = ""; }
 
-    public EntryNameAndDigest(final String name, final String digest) {
-        this.name = requireNonNull(name);
-        this.digest = requireNonNull(digest);
+    public EntryNameAndDigestValue(final String entryName, final String digestValue) {
+        this.name = requireNonNull(entryName);
+        this.digest = requireNonNull(digestValue);
     }
 
     /** Returns the entry name. */
-    public String name() { return name; }
+    public String entryName() { return name; }
 
     /** Returns the value of the message digest. */
-    public String digest() { return digest; }
+    public String digestValue() { return digest; }
 
     @Override public boolean equals(final Object obj) {
-        if (this == obj) return true;
-        if (!(obj instanceof EntryNameAndDigest)) return false;
-        final EntryNameAndDigest that = (EntryNameAndDigest) obj;
-        return  this.name().equals(that.name()) &&
-                this.digest().equals(that.digest());
+        if (this == obj) {
+            return true;
+        }
+        if (!(obj instanceof EntryNameAndDigestValue)) {
+            return false;
+        }
+        final EntryNameAndDigestValue that = (EntryNameAndDigestValue) obj;
+        return this.entryName().equals(that.entryName()) && this.digestValue().equals(that.digestValue());
     }
 
     @Override public int hashCode() {
         int hash = 17;
-        hash = 31 * hash + name().hashCode();
-        hash = 31 * hash + digest().hashCode();
+        hash = 31 * hash + entryName().hashCode();
+        hash = 31 * hash + digestValue().hashCode();
         return hash;
     }
 }

@@ -52,7 +52,7 @@ public class MessageDigests {
     }
 
     /**
-     * Updates the given message digest with the binary data from the given
+     * Updates the given message digest with the binary data first the given
      * source.
      *
      * @param digest the message digest to to.

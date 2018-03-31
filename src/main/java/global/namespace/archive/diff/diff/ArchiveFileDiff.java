@@ -6,8 +6,8 @@ package global.namespace.archive.diff.diff;
 
 import global.namespace.archive.diff.io.*;
 import global.namespace.archive.diff.model.DeltaModel;
-import global.namespace.archive.diff.model.EntryNameAndDigest;
-import global.namespace.archive.diff.model.EntryNameAndTwoDigests;
+import global.namespace.archive.diff.model.EntryNameAndDigestValue;
+import global.namespace.archive.diff.model.EntryNameAndTwoDigestValues;
 import global.namespace.fun.io.api.Sink;
 import global.namespace.fun.io.api.Source;
 import org.apache.commons.compress.archivers.ArchiveEntry;
@@ -24,7 +24,7 @@ import java.util.regex.Pattern;
 import static java.util.Optional.empty;
 
 /**
- * Compares a <it>from-archive file</it> to a <it>to-archive file</it> and generates a <it>delta-archive file</it>.
+ * Compares a first archive file to a second archive file and generates a delta archive file.
  *
  * @author Christian Schlichtherle
  */
@@ -34,7 +34,7 @@ public abstract class ArchiveFileDiff {
     public static Builder builder() { return new Builder(); }
 
     /** Writes the output to the given delta-archive file. */
-    public abstract void outputTo(ArchiveFileSink delta) throws Exception;
+    public abstract void diffTo(ArchiveFileSink delta) throws Exception;
 
     /**
      * A builder for an archive file diff.
@@ -45,7 +45,7 @@ public abstract class ArchiveFileDiff {
 
         private Optional<String> digest = empty();
 
-        private Optional<ArchiveFileSource> from = empty(), to = empty();
+        private Optional<ArchiveFileSource> first = empty(), second = empty();
 
         private Builder() { }
 
@@ -54,26 +54,26 @@ public abstract class ArchiveFileDiff {
             return this;
         }
 
-        public Builder from(final ArchiveFileSource from) {
-            this.from = Optional.of(from);
+        public Builder first(final ArchiveFileSource first) {
+            this.first = Optional.of(first);
             return this;
         }
 
-        public Builder to(final ArchiveFileSource to) {
-            this.to = Optional.of(to);
+        public Builder second(final ArchiveFileSource second) {
+            this.second = Optional.of(second);
             return this;
         }
 
-        public ArchiveFileDiff build() { return create(from.get(), to.get(), digest); }
+        public ArchiveFileDiff build() { return create(first.get(), second.get(), digest); }
 
-        private static ArchiveFileDiff create(final ArchiveFileSource fromSource, final ArchiveFileSource toSource, final Optional<String> digestName) {
+        private static ArchiveFileDiff create(final ArchiveFileSource firstSource, final ArchiveFileSource secondSource, final Optional<String> digestName) {
             return new ArchiveFileDiff() {
 
                 @Override
-                public void outputTo(final ArchiveFileSink deltaSink) throws Exception {
-                    fromSource.acceptReader(from ->
-                            toSource.acceptReader(to ->
-                                    deltaSink.acceptWriter(delta ->
+                public void diffTo(final ArchiveFileSink deltaSink) throws Exception {
+                    firstSource.acceptReader(firstInput ->
+                            secondSource.acceptReader(secondInput ->
+                                    deltaSink.acceptWriter(deltaOutput ->
                                             new Engine() {
 
                                                 final MessageDigest digest =
@@ -81,10 +81,10 @@ public abstract class ArchiveFileDiff {
 
                                                 public MessageDigest digest() { return digest; }
 
-                                                public ArchiveFileInput from() { return from; }
+                                                public ArchiveFileInput firstInput() { return firstInput; }
 
-                                                public ArchiveFileInput to() { return to; }
-                                            }.outputTo(delta)
+                                                public ArchiveFileInput secondInput() { return secondInput; }
+                                            }.diffTo(deltaOutput)
                                     )
                             )
                     );
@@ -101,47 +101,51 @@ public abstract class ArchiveFileDiff {
         /** Returns the message digest. */
         protected abstract MessageDigest digest();
 
-        /** Returns the from-archive file. */
-        protected abstract @WillNotClose ArchiveFileInput from();
+        /** Returns the first-archive file. */
+        protected abstract @WillNotClose ArchiveFileInput firstInput();
 
         /** Returns the to-archive file. */
-        protected abstract @WillNotClose ArchiveFileInput to();
+        protected abstract @WillNotClose ArchiveFileInput secondInput();
 
         /** Writes the output to the given delta-archive file. */
-        public void outputTo(final @WillNotClose ArchiveFileOutput delta) throws Exception {
+        public void diffTo(final @WillNotClose ArchiveFileOutput deltaOutput) throws Exception {
 
             final class Streamer {
 
                 private final DeltaModel model = model();
 
-                private Streamer() throws Exception { model.encodeToXml(deltaEntrySink(deltaEntry(DeltaModel.ENTRY_NAME))); }
+                private Streamer() throws Exception { model.encodeToXml(deltaSink(deltaEntry(DeltaModel.ENTRY_NAME))); }
 
                 private void stream() throws Exception {
-                    for (final ArchiveEntry toEntry : to()) {
-                        final String name = toEntry.getName();
+                    for (final ArchiveEntry secondEntry : secondInput()) {
+                        final String name = secondEntry.getName();
                         if (changedOrAdded(name)) {
                             final ArchiveEntry deltaEntry = deltaEntry(name);
-                            if (toEntry instanceof ZipArchiveEntry && deltaEntry instanceof ZipArchiveEntry &&
+                            if (secondEntry instanceof ZipArchiveEntry && deltaEntry instanceof ZipArchiveEntry &&
                                     COMPRESSED_FILE_EXTENSIONS.matcher(name).matches()) {
-                                final ZipArchiveEntry zipToEntry = (ZipArchiveEntry) toEntry;
-                                final ZipArchiveEntry zipDeltaEntry = (ZipArchiveEntry) deltaEntry;
-                                final long size = zipToEntry.getSize();
+                                final ZipArchiveEntry secondZipEntry = (ZipArchiveEntry) secondEntry;
+                                final ZipArchiveEntry deltaZipEntry = (ZipArchiveEntry) deltaEntry;
+                                final long size = secondZipEntry.getSize();
 
-                                zipDeltaEntry.setMethod(ZipArchiveOutputStream.STORED);
-                                zipDeltaEntry.setSize(size);
-                                zipDeltaEntry.setCompressedSize(size);
-                                zipDeltaEntry.setCrc(zipToEntry.getCrc());
+                                deltaZipEntry.setMethod(ZipArchiveOutputStream.STORED);
+                                deltaZipEntry.setSize(size);
+                                deltaZipEntry.setCompressedSize(size);
+                                deltaZipEntry.setCrc(secondZipEntry.getCrc());
                             }
-                            Copy.copy(toEntrySource(toEntry), deltaEntrySink(deltaEntry));
+                            Copy.copy(secondSource(secondEntry), deltaSink(deltaEntry));
                         }
                     }
                 }
 
-                private Source toEntrySource(ArchiveEntry toEntry) { return new ArchiveEntrySource(toEntry, to()); }
+                private Source secondSource(ArchiveEntry secondEntry) {
+                    return new ArchiveEntrySource(secondEntry, secondInput());
+                }
 
-                private Sink deltaEntrySink(ArchiveEntry deltaEntry) { return new ArchiveEntrySink(deltaEntry, delta); }
+                private Sink deltaSink(ArchiveEntry deltaEntry) {
+                    return new ArchiveEntrySink(deltaEntry, deltaOutput);
+                }
 
-                private ArchiveEntry deltaEntry(String name) { return delta.entry(name); }
+                private ArchiveEntry deltaEntry(String name) { return deltaOutput.entry(name); }
 
                 private boolean changedOrAdded(String name) {
                     return null != model.changed(name) || null != model.added(name);
@@ -151,7 +155,7 @@ public abstract class ArchiveFileDiff {
             new Streamer().stream();
         }
 
-        /** Computes a delta model from the two input archive files. */
+        /** Computes a delta model first the two input archive files. */
         public DeltaModel model() throws Exception { return new Assembler().walkAndReturn(new Assembly()).deltaModel(); }
 
         private class Assembler {
@@ -162,26 +166,28 @@ public abstract class ArchiveFileDiff {
              * the caller.
              */
             Assembly walkAndReturn(final Assembly assembly) throws Exception {
-                for (final ArchiveEntry entry1 : from()) {
-                    if (entry1.isDirectory()) {
+                for (final ArchiveEntry firstEntry : firstInput()) {
+                    if (firstEntry.isDirectory()) {
                         continue;
                     }
-                    final Optional<ArchiveEntry> entry2 = to().entry(entry1.getName());
-                    final ArchiveEntrySource source1 = new ArchiveEntrySource(entry1, from());
-                    if (entry2.isPresent()) {
-                        assembly.visitEntriesInBothFiles(source1, new ArchiveEntrySource(entry2.get(), to()));
+                    final Optional<ArchiveEntry> secondEntry = secondInput().entry(firstEntry.getName());
+                    final ArchiveEntrySource firstSource = new ArchiveEntrySource(firstEntry, firstInput());
+                    if (secondEntry.isPresent()) {
+                        final ArchiveEntrySource secondSource = new ArchiveEntrySource(secondEntry.get(), secondInput());
+                        assembly.visitEntriesInBothFiles(firstSource, secondSource);
                     } else {
-                        assembly.visitEntryInFirstFile(source1);
+                        assembly.visitEntryInFirstFile(firstSource);
                     }
                 }
 
-                for (final ArchiveEntry entry2 : to()) {
-                    if (entry2.isDirectory()) {
+                for (final ArchiveEntry secondEntry : secondInput()) {
+                    if (secondEntry.isDirectory()) {
                         continue;
                     }
-                    final Optional<ArchiveEntry> entry1 = from().entry(entry2.getName());
-                    if (!entry1.isPresent()) {
-                        assembly.visitEntryInSecondFile(new ArchiveEntrySource(entry2, to()));
+                    final Optional<ArchiveEntry> firstEntry = firstInput().entry(secondEntry.getName());
+                    if (!firstEntry.isPresent()) {
+                        final ArchiveEntrySource secondSource = new ArchiveEntrySource(secondEntry, secondInput());
+                        assembly.visitEntryInSecondFile(secondSource);
                     }
                 }
 
@@ -196,9 +202,9 @@ public abstract class ArchiveFileDiff {
          */
         private class Assembly {
 
-            private final Map<String, EntryNameAndTwoDigests> changed = new TreeMap<>();
+            private final Map<String, EntryNameAndTwoDigestValues> changed = new TreeMap<>();
 
-            private final Map<String, EntryNameAndDigest>
+            private final Map<String, EntryNameAndDigestValue>
                     unchanged = new TreeMap<>(),
                     added = new TreeMap<>(),
                     removed = new TreeMap<>();
@@ -217,43 +223,45 @@ public abstract class ArchiveFileDiff {
             /**
              * Visits a pair of archive entries with equal names in the first and second archive file.
              *
-             * @param source1 the archive entry in the first archive file.
-             * @param source2 the archive entry in the second archive file.
+             * @param firstSource the source for reading the archive entry in the first archive file.
+             * @param secondSource the source for reading the archive entry in the second archive file.
              */
-            void visitEntriesInBothFiles(final ArchiveEntrySource source1, final ArchiveEntrySource source2) throws Exception {
-                final String name1 = source1.name();
-                assert name1.equals(source2.name());
-                final String digest1 = digestValueOf(source1);
-                final String digest2 = digestValueOf(source2);
-                if (digest1.equals(digest2)) {
-                    unchanged.put(name1, new EntryNameAndDigest(name1, digest1));
+            void visitEntriesInBothFiles(final ArchiveEntrySource firstSource, final ArchiveEntrySource secondSource)
+                    throws Exception {
+                final String firstName = firstSource.name();
+                assert firstName.equals(secondSource.name());
+                final String firstValue = digestValueOf(firstSource);
+                final String secondValue = digestValueOf(secondSource);
+                if (firstValue.equals(secondValue)) {
+                    unchanged.put(firstName, new EntryNameAndDigestValue(firstName, firstValue));
                 } else {
-                    changed.put(name1, new EntryNameAndTwoDigests(name1, digest1, digest2));
+                    changed.put(firstName, new EntryNameAndTwoDigestValues(firstName, firstValue, secondValue));
                 }
             }
 
             /**
              * Visits an archive entry which is present in the first archive file, but not in the second archive file.
              *
-             * @param source1 the archive entry in the first archive file.
+             * @param firstSource the source for reading the archive entry in the first archive file.
              */
-            void visitEntryInFirstFile(final ArchiveEntrySource source1) throws Exception {
-                final String name = source1.name();
-                removed.put(name, new EntryNameAndDigest(name, digestValueOf(source1)));
+            void visitEntryInFirstFile(final ArchiveEntrySource firstSource) throws Exception {
+                final String firstName = firstSource.name();
+                removed.put(firstName, new EntryNameAndDigestValue(firstName, digestValueOf(firstSource)));
             }
 
             /**
              * Visits an archive entry which is present in the second archive file, but not in the first archive file.
              *
-             * @param source2 the archive entry in the second archive file.
+             * @param secondSource the source for reading the archive entry in the second archive file.
              */
-            void visitEntryInSecondFile(final ArchiveEntrySource source2) throws Exception {
-                final String name = source2.name();
-                added.put(name, new EntryNameAndDigest(name, digestValueOf(source2)));
+            void visitEntryInSecondFile(final ArchiveEntrySource secondSource) throws Exception {
+                final String secondName = secondSource.name();
+                added.put(secondName, new EntryNameAndDigestValue(secondName, digestValueOf(secondSource)));
             }
 
-            String digestValueOf(Source source) throws Exception {
+            String digestValueOf(final Source source) throws Exception {
                 final MessageDigest digest = digest();
+                digest.reset();
                 MessageDigests.updateDigestFrom(digest, source);
                 return MessageDigests.valueOf(digest);
             }

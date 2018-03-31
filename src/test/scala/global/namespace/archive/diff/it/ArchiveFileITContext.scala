@@ -29,9 +29,9 @@ trait ArchiveFileITContext {
 
           lazy val digest: MessageDigest = MessageDigests.sha1
 
-          def from: ArchiveFileInput = jar1
+          def firstInput: ArchiveFileInput = jar1
 
-          def to: ArchiveFileInput = jar2
+          def secondInput: ArchiveFileInput = jar2
         })
       }
     }

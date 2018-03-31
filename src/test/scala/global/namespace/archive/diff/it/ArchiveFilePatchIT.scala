@@ -25,40 +25,40 @@ class ArchiveFilePatchIT extends WordSpec with ArchiveFileITContext {
   }
 
   "An archive file diff and patch" when {
-    "computing a delta-archive file from a from-archive file and a to-archive file and computing another to-archive file from the same from-archive file and the previously computed delta-archive file" should {
+    "computing a delta-archive file first a first-archive file and a to-archive file and computing another to-archive file first the same first-archive file and the previously computed delta-archive file" should {
       "produce an equivalent to-archive file" in {
 
         val deltaJarFile = tempFile()
         try {
           val deltaJarFileStore = new JarFileStore(deltaJarFile)
-          val toJarFile = tempFile()
+          val secondJarFile = tempFile()
           try {
-            val toJarFileStore = new JarFileStore(toJarFile)
+            val secondJarFileStore = new JarFileStore(secondJarFile)
 
-            ArchiveFileDiff.builder.from(test1JarFileStore).to(test2JarFileStore).build.outputTo(deltaJarFileStore)
-            ArchiveFilePatch.builder.from(test1JarFileStore).delta(deltaJarFileStore).build.outputTo(toJarFileStore)
+            ArchiveFileDiff.builder.first(test1JarFileStore).second(test2JarFileStore).build.diffTo(deltaJarFileStore)
+            ArchiveFilePatch.builder.first(test1JarFileStore).delta(deltaJarFileStore).build.patchTo(secondJarFileStore)
 
             test2JarFileStore acceptReader { jar2: ArchiveFileInput =>
               val unchangedReference = fileEntryNames(jar2)
 
-              toJarFileStore acceptReader { updated: ArchiveFileInput =>
+              secondJarFileStore acceptReader { updated: ArchiveFileInput =>
                 val model = new ArchiveFileDiff.Engine {
 
                   val digest: MessageDigest = MessageDigests.sha1
 
-                  def from: ArchiveFileInput = jar2
+                  def firstInput: ArchiveFileInput = jar2
 
-                  def to: ArchiveFileInput = updated
+                  def secondInput: ArchiveFileInput = updated
                 } model ()
                 model.addedEntries shouldBe empty
                 model.removedEntries shouldBe empty
-                model.unchangedEntries.asScala map (_.name) shouldBe unchangedReference
+                model.unchangedEntries.asScala map (_.entryName) shouldBe unchangedReference
                 model.changedEntries shouldBe empty
                 ()
               }
             }
           } finally {
-            toJarFile delete ()
+            secondJarFile delete ()
           }
         } finally {
           deltaJarFile delete ()

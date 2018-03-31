@@ -10,15 +10,15 @@ import java.util.Collection;
 import java.util.Map;
 
 final class EntryNameAndDigestMapAdapter
-        extends XmlAdapter<EntryNameAndDigestCollectionDto, Map<String, EntryNameAndDigest>> {
+        extends XmlAdapter<EntryNameAndDigestCollectionDto, Map<String, EntryNameAndDigestValue>> {
 
     @Override
-    public Map<String, EntryNameAndDigest> unmarshal(EntryNameAndDigestCollectionDto dto) {
+    public Map<String, EntryNameAndDigestValue> unmarshal(EntryNameAndDigestCollectionDto dto) {
         return null == dto ? null : DeltaModel.unchangedMap(dto.entries);
     }
 
     @Override
-    public EntryNameAndDigestCollectionDto marshal(final Map<String, EntryNameAndDigest> map) {
+    public EntryNameAndDigestCollectionDto marshal(final Map<String, EntryNameAndDigestValue> map) {
         if (null == map || map.isEmpty()) {
             return null;
         }
@@ -31,19 +31,19 @@ final class EntryNameAndDigestMapAdapter
 final class EntryNameAndDigestCollectionDto {
 
     @XmlElement(name = "entry")
-    public Collection<EntryNameAndDigest> entries;
+    public Collection<EntryNameAndDigestValue> entries;
 }
 
 final class EntryNameAndTwoDigestsMapAdapter
-        extends XmlAdapter<EntryNameAndTwoDigestsCollectionDto, Map<String, EntryNameAndTwoDigests>> {
+        extends XmlAdapter<EntryNameAndTwoDigestsCollectionDto, Map<String, EntryNameAndTwoDigestValues>> {
 
     @Override
-    public Map<String, EntryNameAndTwoDigests> unmarshal(EntryNameAndTwoDigestsCollectionDto dto) {
+    public Map<String, EntryNameAndTwoDigestValues> unmarshal(EntryNameAndTwoDigestsCollectionDto dto) {
         return null == dto ? null : DeltaModel.changedMap(dto.entries);
     }
 
     @Override
-    public EntryNameAndTwoDigestsCollectionDto marshal(final Map<String, EntryNameAndTwoDigests> map) {
+    public EntryNameAndTwoDigestsCollectionDto marshal(final Map<String, EntryNameAndTwoDigestValues> map) {
         if (null == map || map.isEmpty()) {
             return null;
         }
@@ -56,5 +56,5 @@ final class EntryNameAndTwoDigestsMapAdapter
 final class EntryNameAndTwoDigestsCollectionDto {
 
     @XmlElement(name = "entry")
-    public Collection<EntryNameAndTwoDigests> entries;
+    public Collection<EntryNameAndTwoDigestValues> entries;
 }

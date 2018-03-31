@@ -17,9 +17,9 @@ class ArchiveFileDiffIT extends WordSpec with ArchiveFileITContext {
         import model._
 
         import collection.JavaConverters._
-        removedEntries.asScala map (_.name) shouldBe List("entryOnlyInFile1")
-        addedEntries.asScala map (_.name) shouldBe List("entryOnlyInFile2")
-        unchangedEntries.asScala map (_.name) shouldBe List("META-INF/MANIFEST.MF", "differentEntryTime", "equalEntry")
+        removedEntries.asScala map (_.entryName) shouldBe List("entryOnlyInFile1")
+        addedEntries.asScala map (_.entryName) shouldBe List("entryOnlyInFile2")
+        unchangedEntries.asScala map (_.entryName) shouldBe List("META-INF/MANIFEST.MF", "differentEntryTime", "equalEntry")
         changedEntries.asScala map (_.name) shouldBe List("differentEntrySize")
       }
     }

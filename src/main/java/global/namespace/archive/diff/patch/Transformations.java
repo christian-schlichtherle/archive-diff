@@ -4,12 +4,12 @@
  */
 package global.namespace.archive.diff.patch;
 
-import global.namespace.archive.diff.model.EntryNameAndDigest;
-import global.namespace.archive.diff.model.EntryNameAndTwoDigests;
+import global.namespace.archive.diff.model.EntryNameAndDigestValue;
+import global.namespace.archive.diff.model.EntryNameAndTwoDigestValues;
 
 /**
  * Transforms an object into an
- * {@link global.namespace.archive.diff.model.EntryNameAndDigest} by applying
+ * {@link EntryNameAndDigestValue} by applying
  * some dark magic.
  *
  * @param <T> the type of the objects to transform.
@@ -17,7 +17,7 @@ import global.namespace.archive.diff.model.EntryNameAndTwoDigests;
  */
 interface Transformation<T> {
 
-    EntryNameAndDigest apply(T item);
+    EntryNameAndDigestValue apply(T item);
 }
 
 /**
@@ -25,11 +25,11 @@ interface Transformation<T> {
  *
  * @author Christian Schlichtherle
  */
-final class IdentityTransformation implements Transformation<EntryNameAndDigest> {
+final class IdentityTransformation implements Transformation<EntryNameAndDigestValue> {
 
     @Override
-    public EntryNameAndDigest apply(EntryNameAndDigest entryNameAndDigest) {
-        return entryNameAndDigest;
+    public EntryNameAndDigestValue apply(EntryNameAndDigestValue entryNameAndDigestValue) {
+        return entryNameAndDigestValue;
     }
 }
 
@@ -39,10 +39,10 @@ final class IdentityTransformation implements Transformation<EntryNameAndDigest>
  *
  * @author Christian Schlichtherle
  */
-final class EntryNameAndDigest2Transformation implements Transformation<EntryNameAndTwoDigests> {
+final class EntryNameAndDigest2Transformation implements Transformation<EntryNameAndTwoDigestValues> {
 
     @Override
-    public EntryNameAndDigest apply(EntryNameAndTwoDigests entryNameAndTwoDigests) {
-        return entryNameAndTwoDigests.entryNameAndDigest2();
+    public EntryNameAndDigestValue apply(EntryNameAndTwoDigestValues entryNameAndTwoDigestValues) {
+        return entryNameAndTwoDigestValues.secondEntryNameAndDigestValue();
     }
 }

@@ -6,7 +6,7 @@ package global.namespace.archive.diff.patch;
 
 import global.namespace.archive.diff.io.*;
 import global.namespace.archive.diff.model.DeltaModel;
-import global.namespace.archive.diff.model.EntryNameAndDigest;
+import global.namespace.archive.diff.model.EntryNameAndDigestValue;
 import global.namespace.fun.io.api.Sink;
 import global.namespace.fun.io.api.Socket;
 import org.apache.commons.compress.archivers.ArchiveEntry;
@@ -22,7 +22,7 @@ import java.util.Optional;
 import static java.util.Optional.empty;
 
 /**
- * Applies a <it>delta-archive file</it> to a <it>from-archive file</it> and generates a <it>to-archive file</it>.
+ * Patches a first archive file to a second archive file using a delta archive file.
  *
  * @author Christian Schlichtherle
  */
@@ -31,19 +31,19 @@ public abstract class ArchiveFilePatch {
     /** Returns a new builder for an archive file patch. */
     public static Builder builder() { return new Builder(); }
 
-    /** Writes the output to the given to-archive file. */
-    public abstract void outputTo(ArchiveFileSink to) throws Exception;
+    /** Writes the output to the given second-archive file. */
+    public abstract void patchTo(ArchiveFileSink second) throws Exception;
 
     /** A builder for an archive file patch. */
     @SuppressWarnings({"OptionalUsedAsFieldOrParameterType", "ConstantConditions"})
     public static class Builder {
 
-        private Optional<ArchiveFileSource> from = empty(), delta = empty();
+        private Optional<ArchiveFileSource> first = empty(), delta = empty();
 
         private Builder() { }
 
-        public Builder from(final ArchiveFileSource from) {
-            this.from = Optional.of(from);
+        public Builder first(final ArchiveFileSource first) {
+            this.first = Optional.of(first);
             return this;
         }
 
@@ -52,22 +52,22 @@ public abstract class ArchiveFilePatch {
             return this;
         }
 
-        public ArchiveFilePatch build() { return create(from.get(), delta.get()); }
+        public ArchiveFilePatch build() { return create(first.get(), delta.get()); }
 
-        private static ArchiveFilePatch create(final ArchiveFileSource fromSource, final ArchiveFileSource deltaSource) {
+        private static ArchiveFilePatch create(final ArchiveFileSource firstSource, final ArchiveFileSource deltaSource) {
             return new ArchiveFilePatch() {
 
                 @Override
-                public void outputTo(final ArchiveFileSink toSink) throws Exception {
-                    fromSource.acceptReader(from ->
-                            deltaSource.acceptReader(delta ->
-                                    toSink.acceptWriter(to ->
+                public void patchTo(final ArchiveFileSink secondSink) throws Exception {
+                    firstSource.acceptReader(firstInput ->
+                            deltaSource.acceptReader(deltaInput ->
+                                    secondSink.acceptWriter(secondOutput ->
                                             new Engine() {
 
-                                                public ArchiveFileInput from() { return from; }
+                                                public ArchiveFileInput firstInput() { return firstInput; }
 
-                                                public ArchiveFileInput delta() { return delta; }
-                                            }.outputTo(to)
+                                                public ArchiveFileInput deltaInput() { return deltaInput; }
+                                            }.outputTo(secondOutput)
                                     )
                             )
                     );
@@ -80,16 +80,16 @@ public abstract class ArchiveFilePatch {
 
         private volatile DeltaModel model;
 
-        /** Returns the from-archive file. */
-        protected abstract @WillNotClose ArchiveFileInput from();
+        /** Returns the first-archive file. */
+        protected abstract @WillNotClose ArchiveFileInput firstInput();
 
         /** Returns the delta-archive file. */
-        protected abstract @WillNotClose ArchiveFileInput delta();
+        protected abstract @WillNotClose ArchiveFileInput deltaInput();
 
         /** Writes the output to the given to-archive file. */
-        public void outputTo(final @WillNotClose ArchiveFileOutput to) throws Exception {
-            for (EntryNameFilter filter : passFilters(to)) {
-                outputTo(to, new NoDirectoryEntryNameFilter(filter));
+        public void outputTo(final @WillNotClose ArchiveFileOutput secondOutput) throws Exception {
+            for (EntryNameFilter filter : passFilters(secondOutput)) {
+                outputTo(secondOutput, new NoDirectoryEntryNameFilter(filter));
             }
         }
 
@@ -99,8 +99,8 @@ public abstract class ArchiveFilePatch {
          * The filters should properly partition the set of entry sources, i.e. each entry source should be accepted by
          * exactly one filter.
          */
-        private EntryNameFilter[] passFilters(final @WillNotClose ArchiveFileOutput to) {
-            if (to.entry("") instanceof JarArchiveEntry) {
+        private EntryNameFilter[] passFilters(final @WillNotClose ArchiveFileOutput secondOutput) {
+            if (secondOutput.entry("") instanceof JarArchiveEntry) {
                 // The JarInputStream class assumes that the file entry
                 // "META-INF/MANIFEST.MF" should either be the first or the second
                 // entry (if preceded by the directory entry "META-INF/"), so we
@@ -118,39 +118,43 @@ public abstract class ArchiveFilePatch {
             }
         }
 
-        private void outputTo(final @WillNotClose ArchiveFileOutput to, final EntryNameFilter filter) throws Exception {
+        private void outputTo(final @WillNotClose ArchiveFileOutput secondOutput, final EntryNameFilter filter) throws Exception {
 
-            class ArchiveEntrySink implements Sink {
+            class MyArchiveEntrySink implements Sink {
 
-                private final EntryNameAndDigest entryNameAndDigest;
+                private final EntryNameAndDigestValue entryNameAndDigest;
 
-                ArchiveEntrySink(final EntryNameAndDigest entryNameAndDigest) {
+                MyArchiveEntrySink(final EntryNameAndDigestValue entryNameAndDigest) {
                     assert null != entryNameAndDigest;
                     this.entryNameAndDigest = entryNameAndDigest;
                 }
 
                 @Override
                 public Socket<OutputStream> output() {
-                    final ArchiveEntry entry = toEntry(entryNameAndDigest.name());
-                    return toOutput(entry).map(out ->
-                        new DigestOutputStream(out, digest()) {
+                    final ArchiveEntry secondEntry = secondEntry(entryNameAndDigest.entryName());
+                    return secondSink(secondEntry).map(out -> {
+                        final MessageDigest digest = digest();
+                        digest.reset();
+                        return new DigestOutputStream(out, digest) {
 
                             @Override
                             public void close() throws IOException {
                                 super.close();
-                                if (!valueOfDigest().equals(entryNameAndDigest.digest())) {
-                                    throw new WrongMessageDigestException(entryNameAndDigest.name());
+                                if (!valueOfDigest().equals(entryNameAndDigest.digestValue())) {
+                                    throw new WrongMessageDigestException(entryNameAndDigest.entryName());
                                 }
                             }
 
                             String valueOfDigest() { return MessageDigests.valueOf(digest); }
-                        }
-                    );
+                        };
+                    });
                 }
 
-                private ArchiveEntry toEntry(String name) { return to.entry(name); }
+                private ArchiveEntry secondEntry(String name) { return secondOutput.entry(name); }
 
-                private Socket<OutputStream> toOutput(ArchiveEntry entry) { return to.output(entry); }
+                private Socket<OutputStream> secondSink(ArchiveEntry secondEntry) {
+                    return secondOutput.output(secondEntry);
+                }
             }
 
             abstract class Patch {
@@ -161,8 +165,8 @@ public abstract class ArchiveFilePatch {
 
                 final <T> void apply(final Transformation<T> transformation, final Iterable<T> iterable) throws Exception {
                     for (final T item : iterable) {
-                        final EntryNameAndDigest entryNameAndDigest = transformation.apply(item);
-                        final String name = entryNameAndDigest.name();
+                        final EntryNameAndDigestValue entryNameAndDigestValue = transformation.apply(item);
+                        final String name = entryNameAndDigestValue.entryName();
                         if (!filter.accept(name)) {
                             continue;
                         }
@@ -170,7 +174,7 @@ public abstract class ArchiveFilePatch {
                         try {
                             Copy.copy(
                                     new ArchiveEntrySource(entry.orElseThrow(() -> ioException(new MissingArchiveEntryException(name))), input()),
-                                    new ArchiveEntrySink(entryNameAndDigest)
+                                    new MyArchiveEntrySink(entryNameAndDigestValue)
                             );
                         } catch (WrongMessageDigestException e) {
                             throw ioException(e);
@@ -179,28 +183,28 @@ public abstract class ArchiveFilePatch {
                 }
             }
 
-            class FromArchiveFilePatch extends Patch {
+            class FirstArchiveFilePatch extends Patch {
 
                 @Override
-                ArchiveFileInput input() { return from(); }
+                ArchiveFileInput input() { return firstInput(); }
 
                 @Override
                 IOException ioException(Throwable cause) { return new WrongFromArchiveFileException(cause); }
             }
 
-            class DeltaArchivePatch extends Patch {
+            class DeltaArchiveFilePatch extends Patch {
 
                 @Override
-                ArchiveFileInput input() { return delta(); }
+                ArchiveFileInput input() { return deltaInput(); }
 
                 @Override
                 IOException ioException(Throwable cause) { return new InvalidDeltaArchiveFileException(cause); }
             }
 
             // Order is important here!
-            new FromArchiveFilePatch().apply(new IdentityTransformation(), model().unchangedEntries());
-            new DeltaArchivePatch().apply(new EntryNameAndDigest2Transformation(), model().changedEntries());
-            new DeltaArchivePatch().apply(new IdentityTransformation(), model().addedEntries());
+            new FirstArchiveFilePatch().apply(new IdentityTransformation(), model().unchangedEntries());
+            new DeltaArchiveFilePatch().apply(new EntryNameAndDigest2Transformation(), model().changedEntries());
+            new DeltaArchiveFilePatch().apply(new IdentityTransformation(), model().addedEntries());
         }
 
         private MessageDigest digest() throws Exception {
@@ -213,12 +217,12 @@ public abstract class ArchiveFilePatch {
         }
 
         private DeltaModel loadModel() throws Exception {
-            return DeltaModel.decodeFromXml(new ArchiveEntrySource(modelArchiveEntry(), delta()));
+            return DeltaModel.decodeFromXml(new ArchiveEntrySource(modelArchiveEntry(), deltaInput()));
         }
 
         private ArchiveEntry modelArchiveEntry() throws Exception {
             final String name = DeltaModel.ENTRY_NAME;
-            return delta().entry(name).orElseThrow(() -> new InvalidDeltaArchiveFileException(new MissingArchiveEntryException(name)));
+            return deltaInput().entry(name).orElseThrow(() -> new InvalidDeltaArchiveFileException(new MissingArchiveEntryException(name)));
         }
     }
 }

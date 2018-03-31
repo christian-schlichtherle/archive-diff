@@ -3,8 +3,7 @@
  * All rights reserved. Use is subject to license terms.
  */
 /**
- * Provides a class to compare a <it>from-archive file</it> to a <it>to-archive file</it> and generate a
- * <it>delta-archive file</it>.
+ * Provides a class to compare a first archive file to a second archive file and generate a delta archive file.
  *
  * @author Christian Schlichtherle
  */

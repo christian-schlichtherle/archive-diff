@@ -7,8 +7,8 @@ package global.namespace.archive.diff.patch;
 import java.io.IOException;
 
 /**
- * Indicates that the from-archive provided for patching doesn't match the from-archive which was used to compute the
- * delta-archive.
+ * Indicates that the first archive file provided for patching doesn't match the first archive file which was used to
+ * compute the delta archive file.
  *
  * @author Christian Schlichtherle
  */

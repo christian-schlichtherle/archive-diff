@@ -3,8 +3,7 @@
  * All rights reserved. Use is subject to license terms.
  */
 /**
- * Provides a class to apply a <it>delta-archive file</it> to a <it>from-archive file</it> and generate a
- * <it>to-archive file</it>.
+ * Provides a class to patch a first archive file to a second archive file using a delta archive file.
  *
  * @author Christian Schlichtherle
  */

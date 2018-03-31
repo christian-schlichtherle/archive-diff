@@ -19,7 +19,7 @@ import static java.util.Objects.requireNonNull;
  */
 @Immutable
 @XmlAccessorType(XmlAccessType.FIELD)
-public final class EntryNameAndTwoDigests implements Serializable {
+public final class EntryNameAndTwoDigestValues implements Serializable {
 
     private static final long serialVersionUID = 0L;
 
@@ -27,22 +27,20 @@ public final class EntryNameAndTwoDigests implements Serializable {
     private final String name, first, second;
 
     /** Required for JAXB. */
-    private EntryNameAndTwoDigests() {
-        name = first = second = "";
-    }
+    private EntryNameAndTwoDigestValues() { name = first = second = ""; }
 
     /**
      * Default constructor.
      * The first and second message digest should not be equal.
      */
-    public EntryNameAndTwoDigests(
-            final String name,
-            final String first,
-            final String second) {
-        this.name = requireNonNull(name);
-        this.first = requireNonNull(first);
-        this.second = requireNonNull(second);
-        assert !first.equals(second);
+    public EntryNameAndTwoDigestValues(
+            final String entryName,
+            final String firstDigestValue,
+            final String secondDigestValue) {
+        this.name = requireNonNull(entryName);
+        this.first = requireNonNull(firstDigestValue);
+        this.second = requireNonNull(secondDigestValue);
+        assert !firstDigestValue.equals(secondDigestValue);
     }
 
     /** Returns the entry name. */
@@ -56,19 +54,23 @@ public final class EntryNameAndTwoDigests implements Serializable {
 
     /** Returns the first archive entry name and digest value. */
     @Deprecated
-    public EntryNameAndDigest entryNameAndDigest1() {
-        return new EntryNameAndDigest(name(), first());
+    public EntryNameAndDigestValue firstEntryNameAndDigestValue() {
+        return new EntryNameAndDigestValue(name(), first());
     }
 
     /** Returns the second archive entry name and digest value. */
-    public EntryNameAndDigest entryNameAndDigest2() {
-        return new EntryNameAndDigest(name(), second());
+    public EntryNameAndDigestValue secondEntryNameAndDigestValue() {
+        return new EntryNameAndDigestValue(name(), second());
     }
 
     @Override public boolean equals(final Object obj) {
-        if (this == obj) return true;
-        if (!(obj instanceof EntryNameAndTwoDigests)) return false;
-        final EntryNameAndTwoDigests that = (EntryNameAndTwoDigests) obj;
+        if (this == obj) {
+            return true;
+        }
+        if (!(obj instanceof EntryNameAndTwoDigestValues)) {
+            return false;
+        }
+        final EntryNameAndTwoDigestValues that = (EntryNameAndTwoDigestValues) obj;
         return  this.name().equals(that.name()) &&
                 this.first().equals(that.first()) &&
                 this.second().equals(that.second());

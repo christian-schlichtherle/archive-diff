@@ -54,10 +54,10 @@ public final class DeltaModel implements Serializable {
     private final @CheckForNull Integer numBytes;
 
     @XmlJavaTypeAdapter(EntryNameAndTwoDigestsMapAdapter.class)
-    private final Map<String, EntryNameAndTwoDigests> changed;
+    private final Map<String, EntryNameAndTwoDigestValues> changed;
 
     @XmlJavaTypeAdapter(EntryNameAndDigestMapAdapter.class)
-    private final Map<String, EntryNameAndDigest>
+    private final Map<String, EntryNameAndDigestValue>
             unchanged, added, removed;
 
     /** Required for JAXB. */
@@ -92,21 +92,21 @@ public final class DeltaModel implements Serializable {
         return digest.getDigestLength();
     }
 
-    static Map<String, EntryNameAndTwoDigests> changedMap(
-            final Collection<EntryNameAndTwoDigests> entries) {
-        final Map<String, EntryNameAndTwoDigests> map =
+    static Map<String, EntryNameAndTwoDigestValues> changedMap(
+            final Collection<EntryNameAndTwoDigestValues> entries) {
+        final Map<String, EntryNameAndTwoDigestValues> map =
                 new LinkedHashMap<>(initialCapacity(entries));
-        for (EntryNameAndTwoDigests entryNameAndTwoDigests : entries)
-            map.put(entryNameAndTwoDigests.name(), entryNameAndTwoDigests);
+        for (EntryNameAndTwoDigestValues entryNameAndTwoDigestValues : entries)
+            map.put(entryNameAndTwoDigestValues.name(), entryNameAndTwoDigestValues);
         return unmodifiableMap(map);
     }
 
-    static Map<String, EntryNameAndDigest> unchangedMap(
-            final Collection<EntryNameAndDigest> entries) {
-        final Map<String, EntryNameAndDigest> map =
+    static Map<String, EntryNameAndDigestValue> unchangedMap(
+            final Collection<EntryNameAndDigestValue> entries) {
+        final Map<String, EntryNameAndDigestValue> map =
                 new LinkedHashMap<>(initialCapacity(entries));
-        for (EntryNameAndDigest entryNameAndDigest : entries)
-            map.put(entryNameAndDigest.name(), entryNameAndDigest);
+        for (EntryNameAndDigestValue entryNameAndDigestValue : entries)
+            map.put(entryNameAndDigestValue.entryName(), entryNameAndDigestValue);
         return unmodifiableMap(map);
     }
 
@@ -129,12 +129,12 @@ public final class DeltaModel implements Serializable {
      * Returns a collection of the entry name and two message digests for the
      * <i>changed</i> entries.
      */
-    public Collection<EntryNameAndTwoDigests> changedEntries() {
+    public Collection<EntryNameAndTwoDigestValues> changedEntries() {
         return changed.values();
     }
 
     /** Looks up the given entry name in the <i>changed</i> entries. */
-    public EntryNameAndTwoDigests changed(String name) {
+    public EntryNameAndTwoDigestValues changed(String name) {
         return changed.get(name);
     }
 
@@ -142,13 +142,13 @@ public final class DeltaModel implements Serializable {
      * Returns a collection of the entry name and message digest for the
      * <i>unchanged</i> entries.
      */
-    public Collection<EntryNameAndDigest> unchangedEntries() {
+    public Collection<EntryNameAndDigestValue> unchangedEntries() {
         return unchanged.values();
     }
 
     /** Looks up the given entry name in the <i>unchanged</i> entries. */
     @Deprecated
-    public EntryNameAndDigest unchanged(String name) {
+    public EntryNameAndDigestValue unchanged(String name) {
         return unchanged.get(name);
     }
 
@@ -156,12 +156,12 @@ public final class DeltaModel implements Serializable {
      * Returns a collection of the entry name and message digest for the
      * <i>added</i> entries.
      */
-    public Collection<EntryNameAndDigest> addedEntries() {
+    public Collection<EntryNameAndDigestValue> addedEntries() {
         return added.values();
     }
 
     /** Looks up the given entry name in the <i>added</i> entries. */
-    public EntryNameAndDigest added(String name) {
+    public EntryNameAndDigestValue added(String name) {
         return added.get(name);
     }
 
@@ -169,13 +169,13 @@ public final class DeltaModel implements Serializable {
      * Returns a collection of the entry name and message digest for the
      * <i>removed</i> entries.
      */
-    public Collection<EntryNameAndDigest> removedEntries() {
+    public Collection<EntryNameAndDigestValue> removedEntries() {
         return removed.values();
     }
 
     /** Looks up the given entry name in the <i>removed</i> entries. */
     @Deprecated
-    public EntryNameAndDigest removed(String name) {
+    public EntryNameAndDigestValue removed(String name) {
         return removed.get(name);
     }
 
@@ -256,8 +256,8 @@ public final class DeltaModel implements Serializable {
     public static final class Builder {
 
         @CheckForNull MessageDigest messageDigest;
-        @CheckForNull Collection<EntryNameAndTwoDigests> changed = emptyList();
-        @CheckForNull Collection<EntryNameAndDigest>
+        @CheckForNull Collection<EntryNameAndTwoDigestValues> changed = emptyList();
+        @CheckForNull Collection<EntryNameAndDigestValue>
                 unchanged = emptyList(),
                 added = emptyList(),
                 removed = emptyList();
@@ -271,25 +271,25 @@ public final class DeltaModel implements Serializable {
         }
 
         public Builder changedEntries(
-                final @Nullable Collection<EntryNameAndTwoDigests> changed) {
+                final @Nullable Collection<EntryNameAndTwoDigestValues> changed) {
             this.changed = changed;
             return this;
         }
 
         public Builder unchangedEntries(
-                final @Nullable Collection<EntryNameAndDigest> unchanged) {
+                final @Nullable Collection<EntryNameAndDigestValue> unchanged) {
             this.unchanged = unchanged;
             return this;
         }
 
         public Builder addedEntries(
-                final @Nullable Collection<EntryNameAndDigest> added) {
+                final @Nullable Collection<EntryNameAndDigestValue> added) {
             this.added = added;
             return this;
         }
 
         public Builder removedEntries(
-                final @Nullable Collection<EntryNameAndDigest> removed) {
+                final @Nullable Collection<EntryNameAndDigestValue> removed) {
             this.removed = removed;
             return this;
         }
