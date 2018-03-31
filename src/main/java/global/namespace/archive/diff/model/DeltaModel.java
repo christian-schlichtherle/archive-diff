@@ -36,7 +36,7 @@ import static java.util.Optional.of;
  *
  * @author Christian Schlichtherle
  */
-@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
+@SuppressWarnings({"OptionalUsedAsFieldOrParameterType", "ConstantConditions"})
 @XmlRootElement(name = "delta")
 @XmlAccessorType(XmlAccessType.FIELD)
 public final class DeltaModel implements Serializable {
@@ -107,8 +107,7 @@ public final class DeltaModel implements Serializable {
         return unmodifiableMap(map);
     }
 
-    static Map<String, EntryNameAndDigestValue> unchangedMap(
-            final Collection<EntryNameAndDigestValue> entries) {
+    static Map<String, EntryNameAndDigestValue> unchangedMap(final Collection<EntryNameAndDigestValue> entries) {
         final Map<String, EntryNameAndDigestValue> map =
                 new LinkedHashMap<>(initialCapacity(entries));
         for (EntryNameAndDigestValue entryNameAndDigestValue : entries)
@@ -254,17 +253,13 @@ public final class DeltaModel implements Serializable {
      * <i>added</i> and <i>removed</i> entry names and message digests is an
      * empty collection.
      */
-    @SuppressWarnings({
-        "PackageVisibleField",
-        "AssignmentToCollectionOrArrayFieldFromParameter"
-    })
     public static final class Builder {
 
-        Optional<MessageDigest> messageDigest = empty();
-        Collection<EntryNameAndTwoDigestValues> changed = emptyList();
-        Collection<EntryNameAndDigestValue> unchanged = emptyList(), added = emptyList(), removed = emptyList();
+        private Optional<MessageDigest> messageDigest = empty();
+        private Collection<EntryNameAndTwoDigestValues> changed = emptyList();
+        private Collection<EntryNameAndDigestValue> unchanged = emptyList(), added = emptyList(), removed = emptyList();
 
-        Builder() { }
+        private Builder() { }
 
         public Builder messageDigest(final MessageDigest messageDigest) {
             this.messageDigest = of(messageDigest);

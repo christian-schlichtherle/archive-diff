@@ -56,7 +56,11 @@ public class Archive {
         };
     }
 
-    public static ArchiveFileDiff.Builder diff() { return ArchiveFileDiff.builder(); }
+    /**
+     * Returns a builder for comparing a first archive file to a second archive file and generating a delta archive file.
+     */
+    public static ArchiveFileDiffBuilder diff() { return new ArchiveFileDiffBuilder(); }
 
-    public static ArchiveFilePatch.Builder patch() { return ArchiveFilePatch.builder(); }
+    /** Returns a builder for patching the first archive file to a second archive file using a delta archive file. */
+    public static ArchiveFilePatchBuilder patch() { return new ArchiveFilePatchBuilder(); }
 }
