@@ -2,7 +2,7 @@
  * Copyright (C) 2013-2018 Schlichtherle IT Services.
  * All rights reserved. Use is subject to license terms.
  */
-package global.namespace.archive.diff.io;
+package global.namespace.archive.diff;
 
 import global.namespace.fun.io.api.Sink;
 import global.namespace.fun.io.api.Source;
@@ -26,7 +26,9 @@ import static java.util.Objects.requireNonNull;
  *
  * @author Christian Schlichtherle (copied and edited from the {@code Streams} class in TrueCommons I/O 2.3.2)
  */
-public final class Copy {
+class Copy {
+
+    private Copy() { }
 
     /**
      * The size of the FIFO used for exchanging I/O buffers between a reader
@@ -313,6 +315,4 @@ public final class Copy {
             setDaemon(true);
         }
     }
-
-    private Copy() { }
 }

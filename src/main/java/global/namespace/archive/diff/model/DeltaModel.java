@@ -4,7 +4,6 @@
  */
 package global.namespace.archive.diff.model;
 
-import global.namespace.archive.diff.io.MessageDigests;
 import global.namespace.fun.io.api.Sink;
 import global.namespace.fun.io.api.Source;
 
@@ -19,6 +18,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import java.io.Serializable;
 import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -82,14 +82,17 @@ public final class DeltaModel implements Serializable {
     public static Builder builder() { return new Builder(); }
 
     private static @Nullable Integer lengthBytes(final MessageDigest digest) {
+        final MessageDigest clone;
         try {
-            final MessageDigest
-                    clone = MessageDigests.create(digest.getAlgorithm());
-            if (clone.getDigestLength() == digest.getDigestLength())
-                return null;
-        } catch (IllegalArgumentException ignored) {
+            clone = MessageDigest.getInstance(digest.getAlgorithm());
+        } catch (NoSuchAlgorithmException e) {
+            throw new AssertionError(e);
         }
-        return digest.getDigestLength();
+        if (clone.getDigestLength() == digest.getDigestLength()) {
+            return null;
+        } else {
+            return digest.getDigestLength();
+        }
     }
 
     static Map<String, EntryNameAndTwoDigestValues> changedMap(

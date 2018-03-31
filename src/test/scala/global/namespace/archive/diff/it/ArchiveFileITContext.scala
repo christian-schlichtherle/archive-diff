@@ -8,8 +8,8 @@ import java.io.File
 import java.nio.charset.Charset
 import java.util.logging.{Level, Logger}
 
-import global.namespace.archive.diff.diff.ArchiveFileDiff
-import global.namespace.archive.diff.io.JarFileStore
+import global.namespace.archive.diff.{ArchiveFileDiff, Archive}
+import global.namespace.archive.diff.spi.ArchiveFileStore
 import global.namespace.archive.diff.it.ArchiveFileITContext._
 import global.namespace.archive.diff.model.DeltaModel
 import global.namespace.archive.diff.model.DeltaModel.jaxbContext
@@ -24,9 +24,9 @@ trait ArchiveFileITContext {
 
   final def deltaModel: DeltaModel = ArchiveFileDiff.first(test1JarFileStore).second(test2JarFileStore).deltaModel
 
-  final lazy val test1JarFileStore: JarFileStore = new JarFileStore(file("test1.jar"))
+  final lazy val test1JarFileStore: ArchiveFileStore = Archive.jar(file("test1.jar"))
 
-  final lazy val test2JarFileStore: JarFileStore = new JarFileStore(file("test2.jar"))
+  final lazy val test2JarFileStore: ArchiveFileStore = Archive.jar(file("test2.jar"))
 
   final def assertRoundTripXmlSerializable(original: AnyRef) {
     val store = memoryStore

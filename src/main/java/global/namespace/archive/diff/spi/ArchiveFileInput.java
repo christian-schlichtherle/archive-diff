@@ -2,7 +2,7 @@
  * Copyright (C) 2013-2018 Schlichtherle IT Services.
  * All rights reserved. Use is subject to license terms.
  */
-package global.namespace.archive.diff.io;
+package global.namespace.archive.diff.spi;
 
 import global.namespace.fun.io.api.Socket;
 import org.apache.commons.compress.archivers.ArchiveEntry;
@@ -12,7 +12,7 @@ import java.io.InputStream;
 import java.util.Optional;
 
 /**
- * An abstraction for reading an archive file.
+ * An abstraction for reading archive entries from an archive file.
  *
  * @see ArchiveFileOutput
  * @author Christian Schlichtherle

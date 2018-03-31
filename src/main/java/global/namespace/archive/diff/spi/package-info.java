@@ -3,8 +3,8 @@
  * All rights reserved. Use is subject to license terms.
  */
 /**
- * Provides a class to patch a first archive file to a second archive file using a delta archive file.
+ * A service provider interface which provides abstractions for accessing archive files.
  *
  * @author Christian Schlichtherle
  */
-package global.namespace.archive.diff.patch;
+package global.namespace.archive.diff.spi;

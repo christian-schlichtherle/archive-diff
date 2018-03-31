@@ -2,9 +2,9 @@
  * Copyright (C) 2013-2018 Schlichtherle IT Services.
  * All rights reserved. Use is subject to license terms.
  */
-package global.namespace.archive.diff.patch;
+package global.namespace.archive.diff;
 
-import global.namespace.archive.diff.io.*;
+import global.namespace.archive.diff.spi.*;
 import global.namespace.archive.diff.model.DeltaModel;
 import global.namespace.archive.diff.model.EntryNameAndDigestValue;
 import global.namespace.fun.io.api.Sink;
@@ -68,8 +68,7 @@ public abstract class ArchiveFilePatch {
         /** Returns a new archive file patch. */
         public ArchiveFilePatch build() { return create(first.get(), delta.get()); }
 
-        private static ArchiveFilePatch create(final ArchiveFileSource firstSource,
-                                               final ArchiveFileSource deltaSource) {
+        private static ArchiveFilePatch create(ArchiveFileSource firstSource, ArchiveFileSource deltaSource) {
             return new ArchiveFilePatch() {
 
                 @Override
@@ -182,7 +181,7 @@ public abstract class ArchiveFilePatch {
                         final Optional<ArchiveEntry> entry = input().entry(name);
                         try {
                             Copy.copy(
-                                    new ArchiveEntrySource(entry.orElseThrow(() ->
+                                    ArchiveEntrySource.create(entry.orElseThrow(() ->
                                             ioException(new MissingArchiveEntryException(name))), input()),
                                     new MyArchiveEntrySink(entryNameAndDigestValue)
                             );
@@ -218,7 +217,7 @@ public abstract class ArchiveFilePatch {
         }
 
         MessageDigest digest() throws Exception {
-            return MessageDigests.create(model().digestAlgorithmName());
+            return MessageDigest.getInstance(model().digestAlgorithmName());
         }
 
         DeltaModel model() throws Exception {
@@ -227,7 +226,7 @@ public abstract class ArchiveFilePatch {
         }
 
         DeltaModel loadModel() throws Exception {
-            return DeltaModel.decodeFromXml(new ArchiveEntrySource(modelArchiveEntry(), deltaInput()));
+            return DeltaModel.decodeFromXml(ArchiveEntrySource.create(modelArchiveEntry(), deltaInput()));
         }
 
         ArchiveEntry modelArchiveEntry() throws Exception {

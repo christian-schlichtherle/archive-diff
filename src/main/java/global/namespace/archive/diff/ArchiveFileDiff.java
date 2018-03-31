@@ -2,9 +2,9 @@
  * Copyright (C) 2013-2018 Schlichtherle IT Services.
  * All rights reserved. Use is subject to license terms.
  */
-package global.namespace.archive.diff.diff;
+package global.namespace.archive.diff;
 
-import global.namespace.archive.diff.io.*;
+import global.namespace.archive.diff.spi.*;
 import global.namespace.archive.diff.model.DeltaModel;
 import global.namespace.archive.diff.model.EntryNameAndDigestValue;
 import global.namespace.archive.diff.model.EntryNameAndTwoDigestValues;
@@ -97,9 +97,9 @@ public abstract class ArchiveFileDiff {
             return create(digest.orElseGet(MessageDigests::sha1), first.get(), second.get());
         }
 
-        private static ArchiveFileDiff create(final MessageDigest digest,
-                                              final ArchiveFileSource firstSource,
-                                              final ArchiveFileSource secondSource) {
+        private static ArchiveFileDiff create(MessageDigest digest,
+                                              ArchiveFileSource firstSource,
+                                              ArchiveFileSource secondSource) {
             return new ArchiveFileDiff() {
 
                 @Override
@@ -160,11 +160,11 @@ public abstract class ArchiveFileDiff {
                 }
 
                 private Source secondSource(ArchiveEntry secondEntry) {
-                    return new ArchiveEntrySource(secondEntry, secondInput());
+                    return ArchiveEntrySource.create(secondEntry, secondInput());
                 }
 
                 private Sink deltaSink(ArchiveEntry deltaEntry) {
-                    return new ArchiveEntrySink(deltaEntry, deltaOutput);
+                    return ArchiveEntrySink.create(deltaEntry, deltaOutput);
                 }
 
                 private ArchiveEntry deltaEntry(String name) { return deltaOutput.entry(name); }
@@ -192,9 +192,9 @@ public abstract class ArchiveFileDiff {
                         continue;
                     }
                     final Optional<ArchiveEntry> secondEntry = secondInput().entry(firstEntry.getName());
-                    final ArchiveEntrySource firstSource = new ArchiveEntrySource(firstEntry, firstInput());
+                    final ArchiveEntrySource firstSource = ArchiveEntrySource.create(firstEntry, firstInput());
                     if (secondEntry.isPresent()) {
-                        final ArchiveEntrySource secondSource = new ArchiveEntrySource(secondEntry.get(), secondInput());
+                        final ArchiveEntrySource secondSource = ArchiveEntrySource.create(secondEntry.get(), secondInput());
                         assembly.visitEntriesInBothFiles(firstSource, secondSource);
                     } else {
                         assembly.visitEntryInFirstFile(firstSource);
@@ -207,7 +207,7 @@ public abstract class ArchiveFileDiff {
                     }
                     final Optional<ArchiveEntry> firstEntry = firstInput().entry(secondEntry.getName());
                     if (!firstEntry.isPresent()) {
-                        final ArchiveEntrySource secondSource = new ArchiveEntrySource(secondEntry, secondInput());
+                        final ArchiveEntrySource secondSource = ArchiveEntrySource.create(secondEntry, secondInput());
                         assembly.visitEntryInSecondFile(secondSource);
                     }
                 }

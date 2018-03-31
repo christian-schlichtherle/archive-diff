@@ -2,16 +2,15 @@
  * Copyright (C) 2013-2018 Schlichtherle IT Services.
  * All rights reserved. Use is subject to license terms.
  */
-package global.namespace.archive.diff.io;
+package global.namespace.archive.diff.spi;
 
 import global.namespace.fun.io.api.Socket;
 import global.namespace.fun.io.api.function.XConsumer;
 import global.namespace.fun.io.api.function.XFunction;
 
 /**
- * An abstraction for safe writing of archive entries without leaking resources.
- * An archive file sink provides a {@linkplain #output() socket} for safe access to an
- * {@link ArchiveFileOutput}.
+ * An abstraction for safe writing of archive entries to an archive file without leaking resources.
+ * An archive file sink provides a {@linkplain #output() socket} for safe access to an {@link ArchiveFileOutput}.
  *
  * @author Christian Schlichtherle
  */

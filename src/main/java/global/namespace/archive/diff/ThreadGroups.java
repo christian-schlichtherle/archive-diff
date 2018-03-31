@@ -2,7 +2,7 @@
  * Copyright (C) 2013-2018 Schlichtherle IT Services.
  * All rights reserved. Use is subject to license terms.
  */
-package global.namespace.archive.diff.io;
+package global.namespace.archive.diff;
 
 /**
  * Provides functions for {@link ThreadGroup}s.

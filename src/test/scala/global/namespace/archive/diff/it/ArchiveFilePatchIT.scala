@@ -6,9 +6,7 @@ package global.namespace.archive.diff.it
 
 import java.io._
 
-import global.namespace.archive.diff.diff.ArchiveFileDiff
-import global.namespace.archive.diff.io.JarFileStore
-import global.namespace.archive.diff.patch.ArchiveFilePatch
+import global.namespace.archive.diff.{Archive, ArchiveFileDiff, ArchiveFilePatch}
 import org.scalatest.Matchers._
 import org.scalatest.WordSpec
 
@@ -23,10 +21,10 @@ class ArchiveFilePatchIT extends WordSpec with ArchiveFileITContext {
 
         val deltaJarFile = tempFile()
         try {
-          val deltaJarFileStore = new JarFileStore(deltaJarFile)
+          val deltaJarFileStore = Archive.jar(deltaJarFile)
           val secondJarFile = tempFile()
           try {
-            val secondJarFileStore = new JarFileStore(secondJarFile)
+            val secondJarFileStore = Archive.jar(secondJarFile)
 
             ArchiveFileDiff.first(test1JarFileStore).second(test2JarFileStore).diffTo(deltaJarFileStore)
             ArchiveFilePatch.first(test1JarFileStore).delta(deltaJarFileStore).patchTo(secondJarFileStore)

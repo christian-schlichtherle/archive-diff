@@ -9,7 +9,9 @@ package global.namespace.archive.diff.model;
  *
  * @author Christian Schlichtherle (copied from TrueCommons Shed 2.3.2)
  */
-final class HashMaps {
+class HashMaps {
+
+    private HashMaps() { }
 
     /**
      * The number of entries which should be additionally accomodated by a hash map with a load factor of 75% before
@@ -20,8 +22,6 @@ final class HashMaps {
      * @see   #initialCapacity(int)
      */
     private static final int OVERHEAD_SIZE = (64 - 1) * 3 / 4; // consider 75% load factor
-
-    private HashMaps() { }
 
     /**
      * Returns the initial capacity for a hash table with a load factor of 75%.

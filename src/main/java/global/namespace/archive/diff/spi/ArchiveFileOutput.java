@@ -2,7 +2,7 @@
  * Copyright (C) 2013-2018 Schlichtherle IT Services.
  * All rights reserved. Use is subject to license terms.
  */
-package global.namespace.archive.diff.io;
+package global.namespace.archive.diff.spi;
 
 import global.namespace.fun.io.api.Socket;
 import org.apache.commons.compress.archivers.ArchiveEntry;
@@ -11,7 +11,7 @@ import java.io.Closeable;
 import java.io.OutputStream;
 
 /**
- * An abstraction for writing an archive.
+ * An abstraction for writing archive entries to an archive file.
  *
  * @see ArchiveFileInput
  * @author Christian Schlichtherle

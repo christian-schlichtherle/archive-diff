@@ -4,7 +4,8 @@
  */
 package global.namespace.archive.diff.it
 
-import global.namespace.archive.diff.io.MessageDigests.sha1
+import java.security.MessageDigest
+
 import global.namespace.archive.diff.model.DeltaModel
 import org.scalatest.WordSpec
 
@@ -14,7 +15,7 @@ class DeltaModelIT extends WordSpec with ArchiveFileITContext {
   "A delta model" when {
     "constructed with no data" should {
       "be round-trip XML-serializable" in {
-        assertRoundTripXmlSerializable(DeltaModel.builder.messageDigest(sha1).build)
+        assertRoundTripXmlSerializable(DeltaModel.builder.messageDigest(MessageDigest.getInstance("SHA-1")).build)
       }
     }
 

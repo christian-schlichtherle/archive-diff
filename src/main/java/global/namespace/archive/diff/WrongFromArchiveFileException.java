@@ -2,7 +2,7 @@
  * Copyright (C) 2013-2018 Schlichtherle IT Services.
  * All rights reserved. Use is subject to license terms.
  */
-package global.namespace.archive.diff.patch;
+package global.namespace.archive.diff;
 
 import java.io.IOException;
 
@@ -12,7 +12,7 @@ import java.io.IOException;
  *
  * @author Christian Schlichtherle
  */
-public final class WrongFromArchiveFileException extends IOException {
+public class WrongFromArchiveFileException extends IOException {
 
     private static final long serialVersionUID = 0L;
 
