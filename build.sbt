@@ -1,5 +1,5 @@
 /*
- * Copyright © 2017 Schlichtherle IT Services
+ * Copyright © 2017-2018 Schlichtherle IT Services
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,134 +18,18 @@ import Dependencies._
 
 lazy val root: Project = project
   .in(file("."))
-  .aggregate(api, bios, commonsCompress, it, jackson, jaxb, scalaApi, xz, zip, zipIt)
   .settings(releaseSettings)
-  .settings(aggregateSettings)
-  .settings(name := "Fun I/O")
-
-lazy val api: Project = project
-  .in(file("api"))
   .settings(javaLibrarySettings)
   .settings(
     libraryDependencies ++= Seq(
-      MockitoCore % Test,
-      Scalatest % Test
-    ),
-    name := "Fun I/O API",
-    normalizedName := "fun-io-api"
-  )
-
-lazy val bios: Project = project
-  .in(file("bios"))
-  .dependsOn(api)
-  .settings(javaLibrarySettings)
-  .settings(
-    libraryDependencies ++= Seq(
-      MockitoCore % Test,
-      Scalatest % Test
-    ),
-    name := "Fun I/O Basic",
-    normalizedName := "fun-io-bios"
-  )
-
-lazy val commonsCompress: Project = project
-  .in(file("commons-compress"))
-  .dependsOn(bios)
-  .settings(javaLibrarySettings)
-  .settings(
-    libraryDependencies ++= Seq(
-      CommonsCompress,
-      Xz % Optional
-    ),
-    name := "Fun I/O Commons Compress",
-    normalizedName := "fun-io-commons-compress"
-  )
-
-lazy val it: Project = project
-  .in(file("it"))
-  .dependsOn(bios, commonsCompress, jackson, jaxb, scalaApi, xz)
-  .settings(scalaLibrarySettings)
-  .settings(
-    libraryDependencies ++= Seq(
+      Annotations,
+      FunIoBios,
+      FunIoJaxb,
+      FunIoScalaApi % Test,
       MockitoCore % Test,
       Scalacheck % Test,
       Scalatest % Test
     ),
-    name := "Fun I/O IT",
-    normalizedName := "fun-io-it",
-    publishArtifact := false
-  )
-
-lazy val jackson: Project = project
-  .in(file("jackson"))
-  .dependsOn(api)
-  .settings(javaLibrarySettings)
-  .settings(
-    libraryDependencies ++= Seq(
-      JacksonDatabind
-    ),
-    name := "Fun I/O Jackson",
-    normalizedName := "fun-io-jackson"
-  )
-
-lazy val jaxb: Project = project
-  .in(file("jaxb"))
-  .dependsOn(api)
-  .settings(javaLibrarySettings)
-  .settings(
-    libraryDependencies ++= Seq(
-      ActivationApi,
-      JaxbApi,
-      JaxbRuntime
-    ),
-    name := "Fun I/O JAXB",
-    normalizedName := "fun-io-jaxb"
-  )
-
-lazy val scalaApi: Project = project
-  .in(file("scala-api"))
-  .dependsOn(api)
-  .settings(scalaLibrarySettings)
-  .settings(
-    name := "Fun I/O Scala API",
-    normalizedName := "fun-io-scala-api"
-  )
-
-lazy val xz: Project = project
-  .in(file("xz"))
-  .dependsOn(bios)
-  .settings(javaLibrarySettings)
-  .settings(
-    libraryDependencies ++= Seq(
-      Xz
-    ),
-    name := "Fun I/O XZ",
-    normalizedName := "fun-io-xz"
-  )
-
-lazy val zip: Project = project
-  .in(file("zip"))
-  .dependsOn(bios, jaxb)
-  .settings(javaLibrarySettings)
-  .settings(
-    libraryDependencies ++= Seq(
-      "com.google.code.findbugs" % "annotations" % "3.0.0"
-    ),
-    name := "Fun I/O ZIP",
-    normalizedName := "fun-io-zip"
-  )
-
-lazy val zipIt: Project = project
-  .in(file("zip-it"))
-  .dependsOn(zip, scalaApi % Test)
-  .settings(scalaLibrarySettings)
-  .settings(
-    libraryDependencies ++= Seq(
-      MockitoCore % Test,
-      Scalacheck % Test,
-      Scalatest % Test
-    ),
-    name := "Fun I/O ZIP IT",
-    normalizedName := "fun-io-zip-it",
-    publishArtifact := false
+    name := "Archive Diff",
+    normalizedName := "archive-diff"
   )
