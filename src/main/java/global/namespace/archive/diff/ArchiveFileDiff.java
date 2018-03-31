@@ -4,10 +4,13 @@
  */
 package global.namespace.archive.diff;
 
-import global.namespace.archive.diff.spi.*;
 import global.namespace.archive.diff.model.DeltaModel;
 import global.namespace.archive.diff.model.EntryNameAndDigestValue;
 import global.namespace.archive.diff.model.EntryNameAndTwoDigestValues;
+import global.namespace.archive.diff.spi.ArchiveFileInput;
+import global.namespace.archive.diff.spi.ArchiveFileOutput;
+import global.namespace.archive.diff.spi.ArchiveFileSink;
+import global.namespace.archive.diff.spi.ArchiveFileSource;
 import global.namespace.fun.io.api.Sink;
 import global.namespace.fun.io.api.Source;
 import global.namespace.fun.io.api.function.XFunction;
@@ -28,22 +31,13 @@ import static java.util.Optional.empty;
  *
  * @author Christian Schlichtherle
  */
-public abstract class ArchiveFileDiff {
-
-    /** Returns a new builder for an archive file diff with the given message digest. */
-    public static Builder digest(MessageDigest digest) { return builder().digest(digest); }
-
-    /** Returns a new builder for an archive file diff with the given source for reading the first archive file. */
-    public static Builder first(ArchiveFileSource first) { return builder().first(first); }
-
-    /** Returns a new builder for an archive file diff with the given source for reading the second archive file. */
-    public static Builder second(ArchiveFileSource second) { return builder().second(second); }
+abstract class ArchiveFileDiff {
 
     /** Returns a new builder for an archive file diff. */
-    public static Builder builder() { return new Builder(); }
+    static Builder builder() { return new Builder(); }
 
     /** Writes the delta archive file computed from the first and second archive file to the given sink. */
-    public void diffTo(ArchiveFileSink delta) throws Exception {
+    private void diffTo(ArchiveFileSink delta) throws Exception {
         apply(engine -> {
             delta.acceptWriter(engine::diffTo);
             return null;
@@ -51,7 +45,7 @@ public abstract class ArchiveFileDiff {
     }
 
     /** Returns the delta model computed from the first and second archive file. */
-    public DeltaModel deltaModel() throws Exception { return apply(Engine::deltaModel); }
+    private DeltaModel deltaModel() throws Exception { return apply(Engine::deltaModel); }
 
     abstract <T> T apply(XFunction<Engine, T> function) throws Exception;
 
@@ -87,13 +81,13 @@ public abstract class ArchiveFileDiff {
         }
 
         /** Writes the delta archive file computed from the first and second archive file to the given sink. */
-        public void diffTo(ArchiveFileSink delta) throws Exception { build().diffTo(delta); }
+        public void to(ArchiveFileSink delta) throws Exception { build().diffTo(delta); }
 
         /** Returns the delta model computed from the first and second archive file. */
         public DeltaModel deltaModel() throws Exception { return build().deltaModel(); }
 
         /** Returns new archive file diff. */
-        public ArchiveFileDiff build() {
+        ArchiveFileDiff build() {
             return create(digest.orElseGet(MessageDigests::sha1), first.get(), second.get());
         }
 

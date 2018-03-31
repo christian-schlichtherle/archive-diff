@@ -4,9 +4,12 @@
  */
 package global.namespace.archive.diff;
 
-import global.namespace.archive.diff.spi.*;
 import global.namespace.archive.diff.model.DeltaModel;
 import global.namespace.archive.diff.model.EntryNameAndDigestValue;
+import global.namespace.archive.diff.spi.ArchiveFileInput;
+import global.namespace.archive.diff.spi.ArchiveFileOutput;
+import global.namespace.archive.diff.spi.ArchiveFileSink;
+import global.namespace.archive.diff.spi.ArchiveFileSource;
 import global.namespace.fun.io.api.Sink;
 import global.namespace.fun.io.api.Socket;
 import global.namespace.fun.io.api.function.XConsumer;
@@ -26,19 +29,13 @@ import static java.util.Optional.empty;
  *
  * @author Christian Schlichtherle
  */
-public abstract class ArchiveFilePatch {
-
-    /** Returns a new builder for an archive file patch with the given source for reading the first archive file. */
-    public static Builder first(ArchiveFileSource first) { return builder().first(first); }
-
-    /** Returns a new builder for an archive file patch with the given source for reading the delta archive file. */
-    public static Builder delta(ArchiveFileSource delta) { return builder().delta(delta); }
+abstract class ArchiveFilePatch {
 
     /** Returns a new builder for an archive file patch. */
-    public static Builder builder() { return new Builder(); }
+    static Builder builder() { return new Builder(); }
 
     /** Writes the second archive file computed from the first and delta archive file to the given sink. */
-    public void patchTo(ArchiveFileSink second) throws Exception {
+    private void patchTo(ArchiveFileSink second) throws Exception {
         accept(engine -> second.acceptWriter(engine::patchTo));
     }
 
@@ -63,10 +60,10 @@ public abstract class ArchiveFilePatch {
         }
 
         /** Writes the second archive file computed from the first and delta archive file to the given sink. */
-        public void patchTo(ArchiveFileSink second) throws Exception { build().patchTo(second); }
+        public void to(ArchiveFileSink second) throws Exception { build().patchTo(second); }
 
         /** Returns a new archive file patch. */
-        public ArchiveFilePatch build() { return create(first.get(), delta.get()); }
+        ArchiveFilePatch build() { return create(first.get(), delta.get()); }
 
         private static ArchiveFilePatch create(ArchiveFileSource firstSource, ArchiveFileSource deltaSource) {
             return new ArchiveFilePatch() {

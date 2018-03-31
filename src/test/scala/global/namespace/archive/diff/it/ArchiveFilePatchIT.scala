@@ -5,8 +5,9 @@
 package global.namespace.archive.diff.it
 
 import java.io._
+import java.security.MessageDigest
 
-import global.namespace.archive.diff.{Archive, ArchiveFileDiff, ArchiveFilePatch}
+import global.namespace.archive.diff.Archive._
 import org.scalatest.Matchers._
 import org.scalatest.WordSpec
 
@@ -21,15 +22,26 @@ class ArchiveFilePatchIT extends WordSpec with ArchiveFileITContext {
 
         val deltaJarFile = tempFile()
         try {
-          val deltaJarFileStore = Archive.jar(deltaJarFile)
+          val deltaJarFileStore = jar(deltaJarFile)
           val secondJarFile = tempFile()
           try {
-            val secondJarFileStore = Archive.jar(secondJarFile)
+            val secondJarFileStore = jar(secondJarFile)
 
-            ArchiveFileDiff.first(test1JarFileStore).second(test2JarFileStore).diffTo(deltaJarFileStore)
-            ArchiveFilePatch.first(test1JarFileStore).delta(deltaJarFileStore).patchTo(secondJarFileStore)
+            diff
+              .first(test1JarFileStore)
+              .second(test2JarFileStore)
+              .to(deltaJarFileStore)
+            patch
+              .first(test1JarFileStore)
+              .delta(deltaJarFileStore)
+              .to(secondJarFileStore)
 
-            val model = ArchiveFileDiff.first(test2JarFileStore).second(secondJarFileStore).deltaModel
+            val model = diff
+              .first(test2JarFileStore)
+              .second(secondJarFileStore)
+              .digest(MessageDigest.getInstance("MD5"))
+              .deltaModel
+
             val unchangedReference: List[String] = {
               test2JarFileStore applyReader (_.asScala.filter(!_.isDirectory).map(_.getName).toList)
             }

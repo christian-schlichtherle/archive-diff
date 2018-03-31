@@ -55,4 +55,8 @@ public class Archive {
             }
         };
     }
+
+    public static ArchiveFileDiff.Builder diff() { return ArchiveFileDiff.builder(); }
+
+    public static ArchiveFilePatch.Builder patch() { return ArchiveFilePatch.builder(); }
 }
