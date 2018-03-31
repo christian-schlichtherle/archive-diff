@@ -18,4 +18,9 @@ jdk:
 
 language: scala
 
+matrix:
+  exclude:
+  - env: SCALA_VERSION_2_12=2.12.0
+    jdk: oraclejdk9
+
 script: sbt +test
