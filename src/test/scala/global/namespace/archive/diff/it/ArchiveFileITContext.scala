@@ -6,12 +6,12 @@ package global.namespace.archive.diff.it
 
 import java.io.File
 import java.nio.charset.Charset
-import java.security.MessageDigest
 import java.util.logging.{Level, Logger}
 
 import global.namespace.archive.diff.diff.ArchiveFileDiff
-import global.namespace.archive.diff.io.{ArchiveFileInput, JarFileStore, MessageDigests}
+import global.namespace.archive.diff.io.JarFileStore
 import global.namespace.archive.diff.it.ArchiveFileITContext._
+import global.namespace.archive.diff.model.DeltaModel
 import global.namespace.archive.diff.model.DeltaModel.jaxbContext
 import global.namespace.fun.io.api.{Codec, Store}
 import global.namespace.fun.io.bios.BIOS.memoryStore
@@ -22,20 +22,7 @@ import org.scalatest.Matchers.{equal, theSameInstanceAs, _}
 /** @author Christian Schlichtherle */
 trait ArchiveFileITContext {
 
-  final def loanArchiveFileDiffEngine[A](fun: ArchiveFileDiff.Engine => A): A = {
-    test1JarFileStore.applyReader[A] { jar1: ArchiveFileInput =>
-      test2JarFileStore.applyReader[A] { jar2: ArchiveFileInput =>
-        fun(new ArchiveFileDiff.Engine {
-
-          lazy val digest: MessageDigest = MessageDigests.sha1
-
-          def firstInput: ArchiveFileInput = jar1
-
-          def secondInput: ArchiveFileInput = jar2
-        })
-      }
-    }
-  }
+  final def deltaModel: DeltaModel = ArchiveFileDiff.first(test1JarFileStore).second(test2JarFileStore).deltaModel
 
   final lazy val test1JarFileStore: JarFileStore = new JarFileStore(file("test1.jar"))
 

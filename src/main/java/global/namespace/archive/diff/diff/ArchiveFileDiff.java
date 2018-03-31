@@ -10,11 +10,11 @@ import global.namespace.archive.diff.model.EntryNameAndDigestValue;
 import global.namespace.archive.diff.model.EntryNameAndTwoDigestValues;
 import global.namespace.fun.io.api.Sink;
 import global.namespace.fun.io.api.Source;
+import global.namespace.fun.io.api.function.XFunction;
 import org.apache.commons.compress.archivers.ArchiveEntry;
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
 import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream;
 
-import javax.annotation.WillNotClose;
 import java.security.MessageDigest;
 import java.util.Map;
 import java.util.Optional;
@@ -30,11 +30,30 @@ import static java.util.Optional.empty;
  */
 public abstract class ArchiveFileDiff {
 
+    /** Returns a new builder for an archive file diff with the given message digest. */
+    public static Builder digest(MessageDigest digest) { return builder().digest(digest); }
+
+    /** Returns a new builder for an archive file diff with the given source for reading the first archive file. */
+    public static Builder first(ArchiveFileSource first) { return builder().first(first); }
+
+    /** Returns a new builder for an archive file diff with the given source for reading the second archive file. */
+    public static Builder second(ArchiveFileSource second) { return builder().second(second); }
+
     /** Returns a new builder for an archive file diff. */
     public static Builder builder() { return new Builder(); }
 
-    /** Writes the output to the given delta-archive file. */
-    public abstract void diffTo(ArchiveFileSink delta) throws Exception;
+    /** Writes the delta archive file computed from the first and second archive file to the given sink. */
+    public void diffTo(ArchiveFileSink delta) throws Exception {
+        apply(engine -> {
+            delta.acceptWriter(engine::diffTo);
+            return null;
+        });
+    }
+
+    /** Returns the delta model computed from the first and second archive file. */
+    public DeltaModel deltaModel() throws Exception { return apply(Engine::deltaModel); }
+
+    abstract <T> T apply(XFunction<Engine, T> function) throws Exception;
 
     /**
      * A builder for an archive file diff.
@@ -43,76 +62,79 @@ public abstract class ArchiveFileDiff {
     @SuppressWarnings({"OptionalUsedAsFieldOrParameterType", "ConstantConditions"})
     public static class Builder {
 
-        private Optional<String> digest = empty();
+        private Optional<MessageDigest> digest = empty();
 
         private Optional<ArchiveFileSource> first = empty(), second = empty();
 
         private Builder() { }
 
-        public Builder digest(final String digest) {
+        /** Returns this builder for an archive file diff with the given message digest. */
+        public Builder digest(final MessageDigest digest) {
             this.digest = Optional.of(digest);
             return this;
         }
 
+        /** Returns this builder for an archive file diff with the given source for reading the first archive file. */
         public Builder first(final ArchiveFileSource first) {
             this.first = Optional.of(first);
             return this;
         }
 
+        /** Returns this builder for an archive file diff with the given source for reading the second archive file. */
         public Builder second(final ArchiveFileSource second) {
             this.second = Optional.of(second);
             return this;
         }
 
-        public ArchiveFileDiff build() { return create(first.get(), second.get(), digest); }
+        /** Writes the delta archive file computed from the first and second archive file to the given sink. */
+        public void diffTo(ArchiveFileSink delta) throws Exception { build().diffTo(delta); }
 
-        private static ArchiveFileDiff create(final ArchiveFileSource firstSource, final ArchiveFileSource secondSource, final Optional<String> digestName) {
+        /** Returns the delta model computed from the first and second archive file. */
+        public DeltaModel deltaModel() throws Exception { return build().deltaModel(); }
+
+        /** Returns new archive file diff. */
+        public ArchiveFileDiff build() {
+            return create(digest.orElseGet(MessageDigests::sha1), first.get(), second.get());
+        }
+
+        private static ArchiveFileDiff create(final MessageDigest digest,
+                                              final ArchiveFileSource firstSource,
+                                              final ArchiveFileSource secondSource) {
             return new ArchiveFileDiff() {
 
                 @Override
-                public void diffTo(final ArchiveFileSink deltaSink) throws Exception {
-                    firstSource.acceptReader(firstInput ->
-                            secondSource.acceptReader(secondInput ->
-                                    deltaSink.acceptWriter(deltaOutput ->
-                                            new Engine() {
+                public <T> T apply(final XFunction<Engine, T> function) throws Exception {
+                    return firstSource.applyReader(firstInput -> secondSource.applyReader(secondInput -> function.apply(
+                            new Engine() {
 
-                                                final MessageDigest digest =
-                                                        MessageDigests.create(digestName.orElse("SHA-1"));
+                                public MessageDigest digest() { return digest; }
 
-                                                public MessageDigest digest() { return digest; }
+                                public ArchiveFileInput firstInput() { return firstInput; }
 
-                                                public ArchiveFileInput firstInput() { return firstInput; }
-
-                                                public ArchiveFileInput secondInput() { return secondInput; }
-                                            }.diffTo(deltaOutput)
-                                    )
-                            )
-                    );
+                                public ArchiveFileInput secondInput() { return secondInput; }
+                            }
+                    )));
                 }
             };
         }
     }
 
-    public abstract static class Engine {
+    abstract static class Engine {
 
-        private static final Pattern COMPRESSED_FILE_EXTENSIONS =
+        static final Pattern COMPRESSED_FILE_EXTENSIONS =
                 Pattern.compile(".*\\.(ear|jar|war|zip|gz|xz)", Pattern.CASE_INSENSITIVE);
 
-        /** Returns the message digest. */
-        protected abstract MessageDigest digest();
+        abstract ArchiveFileInput firstInput();
 
-        /** Returns the first-archive file. */
-        protected abstract @WillNotClose ArchiveFileInput firstInput();
+        abstract ArchiveFileInput secondInput();
 
-        /** Returns the to-archive file. */
-        protected abstract @WillNotClose ArchiveFileInput secondInput();
+        abstract MessageDigest digest();
 
-        /** Writes the output to the given delta-archive file. */
-        public void diffTo(final @WillNotClose ArchiveFileOutput deltaOutput) throws Exception {
+        void diffTo(final ArchiveFileOutput deltaOutput) throws Exception {
 
             final class Streamer {
 
-                private final DeltaModel model = model();
+                private final DeltaModel model = deltaModel();
 
                 private Streamer() throws Exception { model.encodeToXml(deltaSink(deltaEntry(DeltaModel.ENTRY_NAME))); }
 
@@ -155,10 +177,9 @@ public abstract class ArchiveFileDiff {
             new Streamer().stream();
         }
 
-        /** Computes a delta model first the two input archive files. */
-        public DeltaModel model() throws Exception { return new Assembler().walkAndReturn(new Assembly()).deltaModel(); }
+        DeltaModel deltaModel() throws Exception { return new Assembler().walkAndReturn(new Assembly()).deltaModel(); }
 
-        private class Assembler {
+        class Assembler {
 
             /**
              * Walks the given assembly through the two archive files and returns it.
@@ -200,11 +221,11 @@ public abstract class ArchiveFileDiff {
          * Note that the order of the calls to the visitor methods is undefined, so you should not depend on the
          * behavior of the current implementation in order to ensure compatibility with future versions.
          */
-        private class Assembly {
+        class Assembly {
 
-            private final Map<String, EntryNameAndTwoDigestValues> changed = new TreeMap<>();
+            final Map<String, EntryNameAndTwoDigestValues> changed = new TreeMap<>();
 
-            private final Map<String, EntryNameAndDigestValue>
+            final Map<String, EntryNameAndDigestValue>
                     unchanged = new TreeMap<>(),
                     added = new TreeMap<>(),
                     removed = new TreeMap<>();

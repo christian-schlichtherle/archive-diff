@@ -9,10 +9,10 @@ import global.namespace.archive.diff.model.DeltaModel;
 import global.namespace.archive.diff.model.EntryNameAndDigestValue;
 import global.namespace.fun.io.api.Sink;
 import global.namespace.fun.io.api.Socket;
+import global.namespace.fun.io.api.function.XConsumer;
 import org.apache.commons.compress.archivers.ArchiveEntry;
 import org.apache.commons.compress.archivers.jar.JarArchiveEntry;
 
-import javax.annotation.WillNotClose;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.security.DigestOutputStream;
@@ -28,11 +28,21 @@ import static java.util.Optional.empty;
  */
 public abstract class ArchiveFilePatch {
 
+    /** Returns a new builder for an archive file patch with the given source for reading the first archive file. */
+    public static Builder first(ArchiveFileSource first) { return builder().first(first); }
+
+    /** Returns a new builder for an archive file patch with the given source for reading the delta archive file. */
+    public static Builder delta(ArchiveFileSource delta) { return builder().delta(delta); }
+
     /** Returns a new builder for an archive file patch. */
     public static Builder builder() { return new Builder(); }
 
-    /** Writes the output to the given second-archive file. */
-    public abstract void patchTo(ArchiveFileSink second) throws Exception;
+    /** Writes the second archive file computed from the first and delta archive file to the given sink. */
+    public void patchTo(ArchiveFileSink second) throws Exception {
+        accept(engine -> second.acceptWriter(engine::patchTo));
+    }
+
+    abstract void accept(XConsumer<Engine> consumer) throws Exception;
 
     /** A builder for an archive file patch. */
     @SuppressWarnings({"OptionalUsedAsFieldOrParameterType", "ConstantConditions"})
@@ -52,44 +62,42 @@ public abstract class ArchiveFilePatch {
             return this;
         }
 
+        /** Writes the second archive file computed from the first and delta archive file to the given sink. */
+        public void patchTo(ArchiveFileSink second) throws Exception { build().patchTo(second); }
+
+        /** Returns a new archive file patch. */
         public ArchiveFilePatch build() { return create(first.get(), delta.get()); }
 
-        private static ArchiveFilePatch create(final ArchiveFileSource firstSource, final ArchiveFileSource deltaSource) {
+        private static ArchiveFilePatch create(final ArchiveFileSource firstSource,
+                                               final ArchiveFileSource deltaSource) {
             return new ArchiveFilePatch() {
 
                 @Override
-                public void patchTo(final ArchiveFileSink secondSink) throws Exception {
-                    firstSource.acceptReader(firstInput ->
-                            deltaSource.acceptReader(deltaInput ->
-                                    secondSink.acceptWriter(secondOutput ->
-                                            new Engine() {
+                void accept(final XConsumer<Engine> consumer) throws Exception {
+                    firstSource.acceptReader(firstInput -> deltaSource.acceptReader(deltaInput -> consumer.accept(
+                            new Engine() {
 
-                                                public ArchiveFileInput firstInput() { return firstInput; }
+                                ArchiveFileInput firstInput() { return firstInput; }
 
-                                                public ArchiveFileInput deltaInput() { return deltaInput; }
-                                            }.outputTo(secondOutput)
-                                    )
-                            )
-                    );
+                                ArchiveFileInput deltaInput() { return deltaInput; }
+                            }
+                    )));
                 }
             };
         }
     }
 
-    public abstract static class Engine {
+    abstract static class Engine {
 
-        private volatile DeltaModel model;
+        DeltaModel model;
 
-        /** Returns the first-archive file. */
-        protected abstract @WillNotClose ArchiveFileInput firstInput();
+        abstract ArchiveFileInput firstInput();
 
-        /** Returns the delta-archive file. */
-        protected abstract @WillNotClose ArchiveFileInput deltaInput();
+        abstract ArchiveFileInput deltaInput();
 
-        /** Writes the output to the given to-archive file. */
-        public void outputTo(final @WillNotClose ArchiveFileOutput secondOutput) throws Exception {
+        void patchTo(final ArchiveFileOutput secondOutput) throws Exception {
             for (EntryNameFilter filter : passFilters(secondOutput)) {
-                outputTo(secondOutput, new NoDirectoryEntryNameFilter(filter));
+                patchTo(secondOutput, new NoDirectoryEntryNameFilter(filter));
             }
         }
 
@@ -99,7 +107,7 @@ public abstract class ArchiveFilePatch {
          * The filters should properly partition the set of entry sources, i.e. each entry source should be accepted by
          * exactly one filter.
          */
-        private EntryNameFilter[] passFilters(final @WillNotClose ArchiveFileOutput secondOutput) {
+        EntryNameFilter[] passFilters(final ArchiveFileOutput secondOutput) {
             if (secondOutput.entry("") instanceof JarArchiveEntry) {
                 // The JarInputStream class assumes that the file entry
                 // "META-INF/MANIFEST.MF" should either be the first or the second
@@ -118,7 +126,7 @@ public abstract class ArchiveFilePatch {
             }
         }
 
-        private void outputTo(final @WillNotClose ArchiveFileOutput secondOutput, final EntryNameFilter filter) throws Exception {
+        void patchTo(final ArchiveFileOutput secondOutput, final EntryNameFilter filter) throws Exception {
 
             class MyArchiveEntrySink implements Sink {
 
@@ -163,7 +171,8 @@ public abstract class ArchiveFilePatch {
 
                 abstract IOException ioException(Throwable cause);
 
-                final <T> void apply(final Transformation<T> transformation, final Iterable<T> iterable) throws Exception {
+                final <T> void apply(final Transformation<T> transformation, final Iterable<T> iterable)
+                        throws Exception {
                     for (final T item : iterable) {
                         final EntryNameAndDigestValue entryNameAndDigestValue = transformation.apply(item);
                         final String name = entryNameAndDigestValue.entryName();
@@ -173,7 +182,8 @@ public abstract class ArchiveFilePatch {
                         final Optional<ArchiveEntry> entry = input().entry(name);
                         try {
                             Copy.copy(
-                                    new ArchiveEntrySource(entry.orElseThrow(() -> ioException(new MissingArchiveEntryException(name))), input()),
+                                    new ArchiveEntrySource(entry.orElseThrow(() ->
+                                            ioException(new MissingArchiveEntryException(name))), input()),
                                     new MyArchiveEntrySink(entryNameAndDigestValue)
                             );
                         } catch (WrongMessageDigestException e) {
@@ -207,22 +217,23 @@ public abstract class ArchiveFilePatch {
             new DeltaArchiveFilePatch().apply(new IdentityTransformation(), model().addedEntries());
         }
 
-        private MessageDigest digest() throws Exception {
+        MessageDigest digest() throws Exception {
             return MessageDigests.create(model().digestAlgorithmName());
         }
 
-        private DeltaModel model() throws Exception {
+        DeltaModel model() throws Exception {
             final DeltaModel model = this.model;
             return null != model ? model : (this.model = loadModel());
         }
 
-        private DeltaModel loadModel() throws Exception {
+        DeltaModel loadModel() throws Exception {
             return DeltaModel.decodeFromXml(new ArchiveEntrySource(modelArchiveEntry(), deltaInput()));
         }
 
-        private ArchiveEntry modelArchiveEntry() throws Exception {
+        ArchiveEntry modelArchiveEntry() throws Exception {
             final String name = DeltaModel.ENTRY_NAME;
-            return deltaInput().entry(name).orElseThrow(() -> new InvalidDeltaArchiveFileException(new MissingArchiveEntryException(name)));
+            return deltaInput().entry(name).orElseThrow(() ->
+                    new InvalidDeltaArchiveFileException(new MissingArchiveEntryException(name)));
         }
     }
 }

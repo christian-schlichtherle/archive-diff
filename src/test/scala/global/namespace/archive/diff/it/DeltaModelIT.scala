@@ -20,7 +20,7 @@ class DeltaModelIT extends WordSpec with ArchiveFileITContext {
 
     "computed from an archive file diff" should {
       "be round-trip XML-serializable" in {
-        assertRoundTripXmlSerializable(loanArchiveFileDiffEngine(_ model ()))
+        assertRoundTripXmlSerializable(deltaModel)
       }
     }
   }
