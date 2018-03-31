@@ -23,7 +23,7 @@ lazy val root: Project = project
   .settings(
     libraryDependencies ++= Seq(
       Annotations,
-      FunIoBios,
+      FunIoBios % Test,
       FunIoJaxb,
       FunIoScalaApi % Test,
       MockitoCore % Test,
