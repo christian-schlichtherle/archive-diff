@@ -17,7 +17,10 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import java.io.Serializable;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.*;
+import java.util.Collection;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Optional;
 
 import static global.namespace.fun.io.jaxb.JAXB.xmlCodec;
 import static java.util.Collections.*;
@@ -50,19 +53,20 @@ public final class DeltaModel implements Serializable {
     private final String algorithm;
 
     @XmlAttribute
-    private final Integer numBytes;
+    @XmlJavaTypeAdapter(OptionalIntegerAdapter.class)
+    private final Optional<Integer> numBytes;
 
-    @XmlJavaTypeAdapter(EntryNameAndTwoDigestsMapAdapter.class)
+    @XmlJavaTypeAdapter(EntryNameAndTwoDigestValuesMapAdapter.class)
     private final Map<String, EntryNameAndTwoDigestValues> changed;
 
-    @XmlJavaTypeAdapter(EntryNameAndDigestMapAdapter.class)
+    @XmlJavaTypeAdapter(EntryNameAndDigestValueMapAdapter.class)
     private final Map<String, EntryNameAndDigestValue> unchanged, added, removed;
 
     /** Required for JAXB. */
     @SuppressWarnings("unused")
     private DeltaModel() {
         algorithm = "";
-        numBytes = null;
+        numBytes = empty();
         changed = emptyMap();
         unchanged = added = removed = emptyMap();
     }
@@ -70,7 +74,7 @@ public final class DeltaModel implements Serializable {
     private DeltaModel(final Builder b) {
         final MessageDigest digest = b.messageDigest.get();
         this.algorithm = digest.getAlgorithm();
-        this.numBytes = lengthBytes(digest).orElse(null);
+        this.numBytes = lengthBytes(digest);
         this.changed = changedMap(b.changed);
         this.unchanged = unchangedMap(b.unchanged);
         this.added = unchangedMap(b.added);
@@ -124,7 +128,7 @@ public final class DeltaModel implements Serializable {
      * This is empty if and only if the byte length of the message digest used to build this delta model is the default
      * value for the algorithm.
      */
-    public Optional<Integer> digestByteLength() { return Optional.ofNullable(numBytes); }
+    public Optional<Integer> digestByteLength() { return numBytes; }
 
     /**
      * Returns a collection of the entry name and two message digests for the
@@ -191,7 +195,7 @@ public final class DeltaModel implements Serializable {
         }
         final DeltaModel that = (DeltaModel) obj;
         return  this.algorithm.equals(that.algorithm) &&
-                Objects.equals(this.numBytes, that.numBytes) &&
+                this.numBytes.equals(that.numBytes) &&
                 this.changed.equals(that.changed) &&
                 this.unchanged.equals(that.unchanged) &&
                 this.added.equals(that.added) &&
@@ -202,7 +206,7 @@ public final class DeltaModel implements Serializable {
     public int hashCode() {
         int hash = 17;
         hash = 31 * hash + algorithm.hashCode();
-        hash = 31 * hash + Objects.hashCode(numBytes);
+        hash = 31 * hash + numBytes.hashCode();
         hash = 31 * hash + changed.hashCode();
         hash = 31 * hash + unchanged.hashCode();
         hash = 31 * hash + added.hashCode();
