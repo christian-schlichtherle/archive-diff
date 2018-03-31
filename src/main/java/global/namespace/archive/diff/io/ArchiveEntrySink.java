@@ -6,9 +6,9 @@ package global.namespace.archive.diff.io;
 
 import global.namespace.fun.io.api.Sink;
 import global.namespace.fun.io.api.Socket;
+import org.apache.commons.compress.archivers.ArchiveEntry;
 
 import java.io.OutputStream;
-import java.util.zip.ZipEntry;
 
 import static java.util.Objects.requireNonNull;
 
@@ -20,10 +20,10 @@ import static java.util.Objects.requireNonNull;
  */
 public final class ArchiveEntrySink implements Sink {
 
-    private final ZipEntry entry;
+    private final ArchiveEntry entry;
     private final ArchiveFileOutput output;
 
-    public ArchiveEntrySink(final ZipEntry entry, final ArchiveFileOutput output) {
+    public ArchiveEntrySink(final ArchiveEntry entry, final ArchiveFileOutput output) {
         this.entry = requireNonNull(entry);
         this.output = requireNonNull(output);
     }

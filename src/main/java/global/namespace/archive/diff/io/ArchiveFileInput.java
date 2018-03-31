@@ -5,11 +5,11 @@
 package global.namespace.archive.diff.io;
 
 import global.namespace.fun.io.api.Socket;
+import org.apache.commons.compress.archivers.ArchiveEntry;
 
 import java.io.Closeable;
 import java.io.InputStream;
 import java.util.Optional;
-import java.util.zip.ZipEntry;
 
 /**
  * An abstraction for reading an archive file.
@@ -17,11 +17,11 @@ import java.util.zip.ZipEntry;
  * @see ArchiveFileOutput
  * @author Christian Schlichtherle
  */
-public interface ArchiveFileInput extends Iterable<ZipEntry>, Closeable {
+public interface ArchiveFileInput extends Iterable<ArchiveEntry>, Closeable {
 
     /** Looks up the archive entry with the given name. */
-    Optional<ZipEntry> entry(String name);
+    Optional<ArchiveEntry> entry(String name);
 
     /** Returns an input stream for reading the contents of the given archive entry. */
-    Socket<InputStream> input(ZipEntry entry);
+    Socket<InputStream> input(ArchiveEntry entry);
 }

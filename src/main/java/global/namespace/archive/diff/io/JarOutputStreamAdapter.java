@@ -4,20 +4,21 @@
  */
 package global.namespace.archive.diff.io;
 
+import org.apache.commons.compress.archivers.ArchiveEntry;
+import org.apache.commons.compress.archivers.jar.JarArchiveEntry;
+import org.apache.commons.compress.archivers.jar.JarArchiveOutputStream;
+
 import javax.annotation.WillCloseWhenClosed;
-import java.util.jar.JarEntry;
-import java.util.jar.JarOutputStream;
-import java.util.zip.ZipEntry;
 
 /**
- * Adapts a {@link JarOutputStream} to an {@link ArchiveFileOutput}.
+ * Adapts a {@link JarArchiveOutputStream} to an {@link ArchiveFileOutput}.
  *
  * @author Christian Schlichtherle
  */
 class JarOutputStreamAdapter extends ZipOutputStreamAdapter {
 
-    JarOutputStreamAdapter(@WillCloseWhenClosed JarOutputStream jar) { super(jar); }
+    JarOutputStreamAdapter(@WillCloseWhenClosed JarArchiveOutputStream jar) { super(jar); }
 
     @Override
-    public ZipEntry entry(String name) { return new JarEntry(name); }
+    public ArchiveEntry entry(String name) { return new JarArchiveEntry(name); }
 }

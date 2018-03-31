@@ -5,11 +5,10 @@
 package global.namespace.archive.diff.io;
 
 import global.namespace.fun.io.api.Socket;
+import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream;
+import org.apache.commons.compress.archivers.zip.ZipFile;
 
 import java.io.File;
-import java.io.FileOutputStream;
-import java.util.zip.ZipFile;
-import java.util.zip.ZipOutputStream;
 
 import static java.util.Objects.requireNonNull;
 
@@ -31,6 +30,6 @@ public final class ZipFileStore implements ArchiveFileSource, ArchiveFileSink {
 
     @Override
     public Socket<ArchiveFileOutput> output() {
-        return () -> new ZipOutputStreamAdapter(new ZipOutputStream(new FileOutputStream(file)));
+        return () -> new ZipOutputStreamAdapter(new ZipArchiveOutputStream(file));
     }
 }

@@ -6,9 +6,9 @@ package global.namespace.archive.diff.io;
 
 import global.namespace.fun.io.api.Socket;
 import global.namespace.fun.io.api.Source;
+import org.apache.commons.compress.archivers.ArchiveEntry;
 
 import java.io.InputStream;
-import java.util.zip.ZipEntry;
 
 import static java.util.Objects.requireNonNull;
 
@@ -20,10 +20,10 @@ import static java.util.Objects.requireNonNull;
  */
 public final class ArchiveEntrySource implements Source {
 
-    private final ZipEntry entry;
+    private final ArchiveEntry entry;
     private final ArchiveFileInput input;
 
-    public ArchiveEntrySource(final ZipEntry entry, final ArchiveFileInput input) {
+    public ArchiveEntrySource(final ArchiveEntry entry, final ArchiveFileInput input) {
         this.entry = requireNonNull(entry);
         this.input = requireNonNull(input);
     }

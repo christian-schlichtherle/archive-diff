@@ -5,6 +5,9 @@
 package global.namespace.archive.diff.io;
 
 import global.namespace.fun.io.api.Socket;
+import org.apache.commons.compress.archivers.ArchiveEntry;
+import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
+import org.apache.commons.compress.archivers.zip.ZipFile;
 
 import javax.annotation.WillCloseWhenClosed;
 import java.io.IOException;
@@ -12,8 +15,6 @@ import java.io.InputStream;
 import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.Optional;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
 
 import static java.util.Objects.requireNonNull;
 
@@ -29,16 +30,16 @@ final class ZipFileAdapter implements ArchiveFileInput {
     ZipFileAdapter(final @WillCloseWhenClosed ZipFile input) { this.zip = requireNonNull(input); }
 
     @Override
-    public Iterator<ZipEntry> iterator() {
-        return new Iterator<ZipEntry>() {
+    public Iterator<ArchiveEntry> iterator() {
+        return new Iterator<ArchiveEntry>() {
 
-            final Enumeration<? extends ZipEntry> en = zip.entries();
+            final Enumeration<? extends ArchiveEntry> en = zip.getEntries();
 
             @Override
             public boolean hasNext() { return en.hasMoreElements(); }
 
             @Override
-            public ZipEntry next() { return en.nextElement(); }
+            public ArchiveEntry next() { return en.nextElement(); }
 
             @Override
             public void remove() { throw new UnsupportedOperationException(); }
@@ -46,10 +47,10 @@ final class ZipFileAdapter implements ArchiveFileInput {
     }
 
     @Override
-    public Optional<ZipEntry> entry(String name) { return Optional.ofNullable(zip.getEntry(name)); }
+    public Optional<ArchiveEntry> entry(String name) { return Optional.ofNullable(zip.getEntry(name)); }
 
     @Override
-    public Socket<InputStream> input(ZipEntry entry) { return () -> zip.getInputStream(entry); }
+    public Socket<InputStream> input(ArchiveEntry entry) { return () -> zip.getInputStream((ZipArchiveEntry) entry); }
 
     @Override
     public void close() throws IOException { zip.close(); }

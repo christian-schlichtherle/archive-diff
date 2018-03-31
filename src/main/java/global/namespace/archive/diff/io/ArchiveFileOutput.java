@@ -5,10 +5,10 @@
 package global.namespace.archive.diff.io;
 
 import global.namespace.fun.io.api.Socket;
+import org.apache.commons.compress.archivers.ArchiveEntry;
 
 import java.io.Closeable;
 import java.io.OutputStream;
-import java.util.zip.ZipEntry;
 
 /**
  * An abstraction for writing an archive.
@@ -19,8 +19,8 @@ import java.util.zip.ZipEntry;
 public interface ArchiveFileOutput extends Closeable {
 
     /** Returns a <em>new</em> archive entry. */
-    ZipEntry entry(String name);
+    ArchiveEntry entry(String name);
 
     /** Returns an output stream socket for writing the contents of the given archive entry. */
-    Socket<OutputStream> output(ZipEntry entry);
+    Socket<OutputStream> output(ArchiveEntry entry);
 }

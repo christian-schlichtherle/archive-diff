@@ -10,6 +10,9 @@ import global.namespace.archive.diff.model.EntryNameAndDigest;
 import global.namespace.archive.diff.model.EntryNameAndTwoDigests;
 import global.namespace.fun.io.api.Sink;
 import global.namespace.fun.io.api.Source;
+import org.apache.commons.compress.archivers.ArchiveEntry;
+import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
+import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream;
 
 import javax.annotation.WillNotClose;
 import java.security.MessageDigest;
@@ -17,8 +20,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.TreeMap;
 import java.util.regex.Pattern;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
 
 import static java.util.Optional.empty;
 
@@ -101,47 +102,50 @@ public abstract class ArchiveFileDiff {
         protected abstract MessageDigest digest();
 
         /** Returns the from-archive file. */
-        protected abstract @WillNotClose
-        ArchiveFileInput from();
+        protected abstract @WillNotClose ArchiveFileInput from();
 
         /** Returns the to-archive file. */
-        protected abstract @WillNotClose
-        ArchiveFileInput to();
+        protected abstract @WillNotClose ArchiveFileInput to();
 
         /** Writes the output to the given delta-archive file. */
         public void outputTo(final @WillNotClose ArchiveFileOutput delta) throws Exception {
 
             final class Streamer {
 
-                final DeltaModel model = model();
+                private final DeltaModel model = model();
 
-                Streamer() throws Exception { model.encodeToXml(sink(entry(DeltaModel.ENTRY_NAME))); }
+                private Streamer() throws Exception { model.encodeToXml(deltaEntrySink(deltaEntry(DeltaModel.ENTRY_NAME))); }
 
-                Streamer stream() throws Exception {
-                    for (final ZipEntry in : to()) {
-                        final String name = in.getName();
+                private void stream() throws Exception {
+                    for (final ArchiveEntry toEntry : to()) {
+                        final String name = toEntry.getName();
                         if (changedOrAdded(name)) {
-                            final ZipEntry out = entry(name);
-                            if (COMPRESSED_FILE_EXTENSIONS.matcher(name).matches()) {
-                                final long size = in.getSize();
-                                out.setMethod(ZipOutputStream.STORED);
-                                out.setSize(size);
-                                out.setCompressedSize(size);
-                                out.setCrc(in.getCrc());
+                            final ArchiveEntry deltaEntry = deltaEntry(name);
+                            if (toEntry instanceof ZipArchiveEntry && deltaEntry instanceof ZipArchiveEntry &&
+                                    COMPRESSED_FILE_EXTENSIONS.matcher(name).matches()) {
+                                final ZipArchiveEntry zipToEntry = (ZipArchiveEntry) toEntry;
+                                final ZipArchiveEntry zipDeltaEntry = (ZipArchiveEntry) deltaEntry;
+                                final long size = zipToEntry.getSize();
+
+                                zipDeltaEntry.setMethod(ZipArchiveOutputStream.STORED);
+                                zipDeltaEntry.setSize(size);
+                                zipDeltaEntry.setCompressedSize(size);
+                                zipDeltaEntry.setCrc(zipToEntry.getCrc());
                             }
-                            Copy.copy(source2(in), sink(out));
+                            Copy.copy(toEntrySource(toEntry), deltaEntrySink(deltaEntry));
                         }
                     }
-                    return this;
                 }
 
-                Source source2(ZipEntry entry) { return new ArchiveEntrySource(entry, to()); }
+                private Source toEntrySource(ArchiveEntry toEntry) { return new ArchiveEntrySource(toEntry, to()); }
 
-                Sink sink(ZipEntry entry) { return new ArchiveEntrySink(entry, delta); }
+                private Sink deltaEntrySink(ArchiveEntry deltaEntry) { return new ArchiveEntrySink(deltaEntry, delta); }
 
-                ZipEntry entry(String name) { return delta.entry(name); }
+                private ArchiveEntry deltaEntry(String name) { return delta.entry(name); }
 
-                boolean changedOrAdded(String name) { return null != model.changed(name) || null != model.added(name); }
+                private boolean changedOrAdded(String name) {
+                    return null != model.changed(name) || null != model.added(name);
+                }
             }
 
             new Streamer().stream();
@@ -158,11 +162,11 @@ public abstract class ArchiveFileDiff {
              * the caller.
              */
             Assembly walkAndReturn(final Assembly assembly) throws Exception {
-                for (final ZipEntry entry1 : from()) {
+                for (final ArchiveEntry entry1 : from()) {
                     if (entry1.isDirectory()) {
                         continue;
                     }
-                    final Optional<ZipEntry> entry2 = to().entry(entry1.getName());
+                    final Optional<ArchiveEntry> entry2 = to().entry(entry1.getName());
                     final ArchiveEntrySource source1 = new ArchiveEntrySource(entry1, from());
                     if (entry2.isPresent()) {
                         assembly.visitEntriesInBothFiles(source1, new ArchiveEntrySource(entry2.get(), to()));
@@ -171,11 +175,11 @@ public abstract class ArchiveFileDiff {
                     }
                 }
 
-                for (final ZipEntry entry2 : to()) {
+                for (final ArchiveEntry entry2 : to()) {
                     if (entry2.isDirectory()) {
                         continue;
                     }
-                    final Optional<ZipEntry> entry1 = from().entry(entry2.getName());
+                    final Optional<ArchiveEntry> entry1 = from().entry(entry2.getName());
                     if (!entry1.isPresent()) {
                         assembly.visitEntryInSecondFile(new ArchiveEntrySource(entry2, to()));
                     }

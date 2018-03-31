@@ -9,6 +9,8 @@ import global.namespace.archive.diff.model.DeltaModel;
 import global.namespace.archive.diff.model.EntryNameAndDigest;
 import global.namespace.fun.io.api.Sink;
 import global.namespace.fun.io.api.Socket;
+import org.apache.commons.compress.archivers.ArchiveEntry;
+import org.apache.commons.compress.archivers.jar.JarArchiveEntry;
 
 import javax.annotation.WillNotClose;
 import java.io.IOException;
@@ -16,8 +18,6 @@ import java.io.OutputStream;
 import java.security.DigestOutputStream;
 import java.security.MessageDigest;
 import java.util.Optional;
-import java.util.jar.JarEntry;
-import java.util.zip.ZipEntry;
 
 import static java.util.Optional.empty;
 
@@ -81,12 +81,10 @@ public abstract class ArchiveFilePatch {
         private volatile DeltaModel model;
 
         /** Returns the from-archive file. */
-        protected abstract @WillNotClose
-        ArchiveFileInput from();
+        protected abstract @WillNotClose ArchiveFileInput from();
 
         /** Returns the delta-archive file. */
-        protected abstract @WillNotClose
-        ArchiveFileInput delta();
+        protected abstract @WillNotClose ArchiveFileInput delta();
 
         /** Writes the output to the given to-archive file. */
         public void outputTo(final @WillNotClose ArchiveFileOutput to) throws Exception {
@@ -101,8 +99,8 @@ public abstract class ArchiveFilePatch {
          * The filters should properly partition the set of entry sources, i.e. each entry source should be accepted by
          * exactly one filter.
          */
-        private EntryNameFilter[] passFilters(final @WillNotClose ArchiveFileOutput update) {
-            if (update.entry("") instanceof JarEntry) {
+        private EntryNameFilter[] passFilters(final @WillNotClose ArchiveFileOutput to) {
+            if (to.entry("") instanceof JarArchiveEntry) {
                 // The JarInputStream class assumes that the file entry
                 // "META-INF/MANIFEST.MF" should either be the first or the second
                 // entry (if preceded by the directory entry "META-INF/"), so we
@@ -124,7 +122,7 @@ public abstract class ArchiveFilePatch {
 
             class ArchiveEntrySink implements Sink {
 
-                final EntryNameAndDigest entryNameAndDigest;
+                private final EntryNameAndDigest entryNameAndDigest;
 
                 ArchiveEntrySink(final EntryNameAndDigest entryNameAndDigest) {
                     assert null != entryNameAndDigest;
@@ -133,8 +131,8 @@ public abstract class ArchiveFilePatch {
 
                 @Override
                 public Socket<OutputStream> output() {
-                    final ZipEntry entry = entry(entryNameAndDigest.name());
-                    return output(entry).map(out ->
+                    final ArchiveEntry entry = toEntry(entryNameAndDigest.name());
+                    return toOutput(entry).map(out ->
                         new DigestOutputStream(out, digest()) {
 
                             @Override
@@ -150,9 +148,9 @@ public abstract class ArchiveFilePatch {
                     );
                 }
 
-                ZipEntry entry(String name) { return to.entry(name); }
+                private ArchiveEntry toEntry(String name) { return to.entry(name); }
 
-                Socket<OutputStream> output(ZipEntry entry) { return to.output(entry); }
+                private Socket<OutputStream> toOutput(ArchiveEntry entry) { return to.output(entry); }
             }
 
             abstract class Patch {
@@ -168,7 +166,7 @@ public abstract class ArchiveFilePatch {
                         if (!filter.accept(name)) {
                             continue;
                         }
-                        final Optional<ZipEntry> entry = input().entry(name);
+                        final Optional<ArchiveEntry> entry = input().entry(name);
                         try {
                             Copy.copy(
                                     new ArchiveEntrySource(entry.orElseThrow(() -> ioException(new MissingArchiveEntryException(name))), input()),
@@ -218,7 +216,7 @@ public abstract class ArchiveFilePatch {
             return DeltaModel.decodeFromXml(new ArchiveEntrySource(modelArchiveEntry(), delta()));
         }
 
-        private ZipEntry modelArchiveEntry() throws Exception {
+        private ArchiveEntry modelArchiveEntry() throws Exception {
             final String name = DeltaModel.ENTRY_NAME;
             return delta().entry(name).orElseThrow(() -> new InvalidDeltaArchiveFileException(new MissingArchiveEntryException(name)));
         }
