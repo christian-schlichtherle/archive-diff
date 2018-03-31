@@ -12,9 +12,9 @@ import java.io.IOException;
  *
  * @author Christian Schlichtherle
  */
-public class WrongFromArchiveFileException extends IOException {
+public class WrongFirstArchiveFileException extends IOException {
 
     private static final long serialVersionUID = 0L;
 
-    WrongFromArchiveFileException(Throwable cause) { super(cause); }
+    WrongFirstArchiveFileException(Throwable cause) { super(cause); }
 }

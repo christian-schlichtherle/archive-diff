@@ -10,6 +10,7 @@ import global.namespace.archive.diff.model.EntryNameAndTwoDigestValues;
 import global.namespace.archive.diff.spi.ArchiveFileInput;
 import global.namespace.archive.diff.spi.ArchiveFileOutput;
 import global.namespace.archive.diff.spi.ArchiveFileSink;
+import global.namespace.archive.diff.spi.ArchiveFileSource;
 import global.namespace.fun.io.api.Sink;
 import global.namespace.fun.io.api.Source;
 import global.namespace.fun.io.api.function.XFunction;
@@ -30,29 +31,40 @@ import java.util.regex.Pattern;
  */
 abstract class ArchiveFileDiff {
 
-    /** Writes the delta archive file computed from the first and second archive file to the given sink. */
-    void diffTo(ArchiveFileSink delta) throws Exception {
+    private static final Pattern COMPRESSED_FILE_EXTENSIONS =
+            Pattern.compile(".*\\.(ear|jar|war|zip|gz|xz)", Pattern.CASE_INSENSITIVE);
+
+    abstract MessageDigest digest();
+
+    abstract ArchiveFileSource firstSource();
+
+    abstract ArchiveFileSource secondSource();
+
+    void to(ArchiveFileSink delta) throws Exception {
         apply(engine -> {
             delta.acceptWriter(engine::diffTo);
             return null;
         });
     }
 
-    /** Returns the delta model computed from the first and second archive file. */
     DeltaModel deltaModel() throws Exception { return apply(Engine::deltaModel); }
 
-    abstract <T> T apply(XFunction<Engine, T> function) throws Exception;
+    private <T> T apply(XFunction<Engine, T> function) throws Exception {
+        return firstSource().applyReader(firstInput -> secondSource().applyReader(secondInput -> function.apply(
+                new Engine() {
 
-    abstract static class Engine {
+                    public ArchiveFileInput firstInput() { return firstInput; }
 
-        static final Pattern COMPRESSED_FILE_EXTENSIONS =
-                Pattern.compile(".*\\.(ear|jar|war|zip|gz|xz)", Pattern.CASE_INSENSITIVE);
+                    public ArchiveFileInput secondInput() { return secondInput; }
+                }
+        )));
+    }
+
+    private abstract class Engine {
 
         abstract ArchiveFileInput firstInput();
 
         abstract ArchiveFileInput secondInput();
-
-        abstract MessageDigest digest();
 
         void diffTo(final ArchiveFileOutput deltaOutput) throws Exception {
 

@@ -9,6 +9,7 @@ import global.namespace.archive.diff.model.EntryNameAndDigestValue;
 import global.namespace.archive.diff.spi.ArchiveFileInput;
 import global.namespace.archive.diff.spi.ArchiveFileOutput;
 import global.namespace.archive.diff.spi.ArchiveFileSink;
+import global.namespace.archive.diff.spi.ArchiveFileSource;
 import global.namespace.fun.io.api.Sink;
 import global.namespace.fun.io.api.Socket;
 import global.namespace.fun.io.api.function.XConsumer;
@@ -28,13 +29,26 @@ import java.util.Optional;
  */
 abstract class ArchiveFilePatch {
 
+    abstract ArchiveFileSource firstSource();
+
+    abstract ArchiveFileSource deltaSource();
+
     void to(ArchiveFileSink second) throws Exception {
         accept(engine -> second.acceptWriter(engine::patchTo));
     }
 
-    abstract void accept(XConsumer<Engine> consumer) throws Exception;
+    private void accept(final XConsumer<Engine> consumer) throws Exception {
+        firstSource().acceptReader(firstInput -> deltaSource().acceptReader(deltaInput -> consumer.accept(
+                new Engine() {
 
-    abstract static class Engine {
+                    ArchiveFileInput firstInput() { return firstInput; }
+
+                    ArchiveFileInput deltaInput() { return deltaInput; }
+                }
+        )));
+    }
+
+    private abstract static class Engine {
 
         DeltaModel model;
 
@@ -146,7 +160,7 @@ abstract class ArchiveFilePatch {
                 ArchiveFileInput input() { return firstInput(); }
 
                 @Override
-                IOException ioException(Throwable cause) { return new WrongFromArchiveFileException(cause); }
+                IOException ioException(Throwable cause) { return new WrongFirstArchiveFileException(cause); }
             }
 
             class DeltaArchiveFilePatch extends Patch {

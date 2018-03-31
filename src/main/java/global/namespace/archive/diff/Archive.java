@@ -18,7 +18,7 @@ import java.io.FileOutputStream;
 import static java.util.Objects.requireNonNull;
 
 /**
- * A static factory for providing access to JAR and ZIP files.
+ * Provides access to archive files and diff and patch ZIP based archive files.
  *
  * @author Christian Schlichtherle
  */
