@@ -36,20 +36,20 @@ class ArchiveFilePatchIT extends WordSpec with ArchiveFileITContext {
               .delta(deltaJarFileStore)
               .to(secondJarFileStore)
 
-            val model = diff
-              .first(test2JarFileStore)
-              .second(secondJarFileStore)
-              .digest(MessageDigest.getInstance("MD5"))
-              .deltaModel
 
             val unchangedReference: List[String] = {
               test2JarFileStore applyReader (_.asScala.filter(!_.isDirectory).map(_.getName).toList)
             }
 
+            val model = diff
+              .first(test2JarFileStore)
+              .second(secondJarFileStore)
+              .digest(MessageDigest.getInstance("MD5"))
+              .deltaModel
+            model.changedEntries shouldBe empty
             model.addedEntries shouldBe empty
             model.removedEntries shouldBe empty
             model.unchangedEntries.asScala map (_.entryName) shouldBe unchangedReference
-            model.changedEntries shouldBe empty
           } finally {
             secondJarFile delete ()
           }
