@@ -7,11 +7,11 @@ import java.security.MessageDigest;
 
 public final class DeltaModelAdapter extends XmlAdapter<DeltaModelDTO, DeltaModel> {
 
-    private final EntryNameAndTwoDigestValuesCollectionAdapter
-            entryNameAndTwoDigestValuesCollectionAdapter = new EntryNameAndTwoDigestValuesCollectionAdapter();
-
     private final EntryNameAndDigestValueCollectionAdapter
             entryNameAndDigestValueCollectionAdapter = new EntryNameAndDigestValueCollectionAdapter();
+
+    private final EntryNameAndTwoDigestValuesCollectionAdapter
+            entryNameAndTwoDigestValuesCollectionAdapter = new EntryNameAndTwoDigestValuesCollectionAdapter();
 
     @Override
     public DeltaModel unmarshal(DeltaModelDTO v) throws Exception {

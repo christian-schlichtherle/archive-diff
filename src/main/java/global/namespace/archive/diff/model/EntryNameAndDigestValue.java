@@ -4,11 +4,6 @@
  */
 package global.namespace.archive.diff.model;
 
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlAttribute;
-import java.io.Serializable;
-
 import static java.util.Objects.requireNonNull;
 
 /**
@@ -16,29 +11,25 @@ import static java.util.Objects.requireNonNull;
  *
  * @author Christian Schlichtherle
  */
-@XmlAccessorType(XmlAccessType.FIELD)
-public final class EntryNameAndDigestValue implements Serializable {
+public final class EntryNameAndDigestValue {
 
     private static final long serialVersionUID = 0L;
 
-    @XmlAttribute(required = true)
-    private final String name, digest;
-
-    /** Required for JAXB. */
-    private EntryNameAndDigestValue() { name = digest = ""; }
+    private final String entryName, digestValue;
 
     public EntryNameAndDigestValue(final String entryName, final String digestValue) {
-        this.name = requireNonNull(entryName);
-        this.digest = requireNonNull(digestValue);
+        this.entryName = requireNonNull(entryName);
+        this.digestValue = requireNonNull(digestValue);
     }
 
     /** Returns the entry name. */
-    public String entryName() { return name; }
+    public String entryName() { return entryName; }
 
     /** Returns the value of the message digest. */
-    public String digestValue() { return digest; }
+    public String digestValue() { return digestValue; }
 
-    @Override public boolean equals(final Object obj) {
+    @Override
+    public boolean equals(final Object obj) {
         if (this == obj) {
             return true;
         }
@@ -49,7 +40,8 @@ public final class EntryNameAndDigestValue implements Serializable {
         return this.entryName().equals(that.entryName()) && this.digestValue().equals(that.digestValue());
     }
 
-    @Override public int hashCode() {
+    @Override
+    public int hashCode() {
         int hash = 17;
         hash = 31 * hash + entryName().hashCode();
         hash = 31 * hash + digestValue().hashCode();

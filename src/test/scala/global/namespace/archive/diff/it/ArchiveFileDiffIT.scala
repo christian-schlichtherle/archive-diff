@@ -18,7 +18,7 @@ class ArchiveFileDiffIT extends WordSpec with ArchiveITContext {
       "partition the entry names and digests correctly" in {
         val model = (diff first Test1Jar second Test2Jar).deltaModel
         import model._
-        changedEntries.asScala map (_.name) shouldBe List("differentEntrySize")
+        changedEntries.asScala map (_.entryName) shouldBe List("differentEntrySize")
         addedEntries.asScala map (_.entryName) shouldBe List("entryOnlyInFile2")
         removedEntries.asScala map (_.entryName) shouldBe List("entryOnlyInFile1")
         unchangedEntries.asScala map (_.entryName) shouldBe List("META-INF/MANIFEST.MF", "differentEntryTime", "equalEntry")

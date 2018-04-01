@@ -2,9 +2,10 @@ package global.namespace.archive.diff.model.dto;
 
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
+import java.io.Serializable;
 
 @XmlRootElement(name = "delta")
-public class DeltaModelDTO {
+public class DeltaModelDTO implements Serializable {
 
     @XmlAttribute(required = true)
     public String algorithm;
@@ -12,7 +13,7 @@ public class DeltaModelDTO {
     @XmlAttribute
     public Integer numBytes;
 
-    public EntryNameAndTwoDigestValuesCollectionDTO changed;
+    public EntryNameAndTwoDigestValuesListDTO changed;
 
-    public EntryNameAndDigestValueCollectionDTO unchanged, added, removed;
+    public EntryNameAndDigestValueListDTO unchanged, added, removed;
 }

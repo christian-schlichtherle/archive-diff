@@ -4,11 +4,6 @@
  */
 package global.namespace.archive.diff.model;
 
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlAttribute;
-import java.io.Serializable;
-
 import static java.util.Objects.requireNonNull;
 
 /**
@@ -16,16 +11,11 @@ import static java.util.Objects.requireNonNull;
  *
  * @author Christian Schlichtherle
  */
-@XmlAccessorType(XmlAccessType.FIELD)
-public final class EntryNameAndTwoDigestValues implements Serializable {
+public final class EntryNameAndTwoDigestValues {
 
     private static final long serialVersionUID = 0L;
 
-    @XmlAttribute(required = true)
-    private final String name, first, second;
-
-    /** Required for JAXB. */
-    private EntryNameAndTwoDigestValues() { name = first = second = ""; }
+    private final String entryName, firstDigestValue, secondDigestValue;
 
     /**
      * Default constructor.
@@ -35,33 +25,34 @@ public final class EntryNameAndTwoDigestValues implements Serializable {
             final String entryName,
             final String firstDigestValue,
             final String secondDigestValue) {
-        this.name = requireNonNull(entryName);
-        this.first = requireNonNull(firstDigestValue);
-        this.second = requireNonNull(secondDigestValue);
+        this.entryName = requireNonNull(entryName);
+        this.firstDigestValue = requireNonNull(firstDigestValue);
+        this.secondDigestValue = requireNonNull(secondDigestValue);
         assert !firstDigestValue.equals(secondDigestValue);
     }
 
     /** Returns the entry name. */
-    public String name() { return name; }
+    public String entryName() { return entryName; }
 
     /** Returns the first message digest value. */
-    public String first() { return first; }
+    public String firstDigestValue() { return firstDigestValue; }
 
     /** Returns the second message digest value. */
-    public String second() { return second; }
+    public String secondDigestValue() { return secondDigestValue; }
 
     /** Returns the first archive entry name and digest value. */
     @Deprecated
     public EntryNameAndDigestValue firstEntryNameAndDigestValue() {
-        return new EntryNameAndDigestValue(name(), first());
+        return new EntryNameAndDigestValue(entryName(), firstDigestValue());
     }
 
     /** Returns the second archive entry name and digest value. */
     public EntryNameAndDigestValue secondEntryNameAndDigestValue() {
-        return new EntryNameAndDigestValue(name(), second());
+        return new EntryNameAndDigestValue(entryName(), secondDigestValue());
     }
 
-    @Override public boolean equals(final Object obj) {
+    @Override
+    public boolean equals(final Object obj) {
         if (this == obj) {
             return true;
         }
@@ -69,16 +60,17 @@ public final class EntryNameAndTwoDigestValues implements Serializable {
             return false;
         }
         final EntryNameAndTwoDigestValues that = (EntryNameAndTwoDigestValues) obj;
-        return  this.name().equals(that.name()) &&
-                this.first().equals(that.first()) &&
-                this.second().equals(that.second());
+        return  this.entryName().equals(that.entryName()) &&
+                this.firstDigestValue().equals(that.firstDigestValue()) &&
+                this.secondDigestValue().equals(that.secondDigestValue());
     }
 
-    @Override public int hashCode() {
+    @Override
+    public int hashCode() {
         int hash = 17;
-        hash = 31 * hash + name().hashCode();
-        hash = 31 * hash + first().hashCode();
-        hash = 31 * hash + second().hashCode();
+        hash = 31 * hash + entryName().hashCode();
+        hash = 31 * hash + firstDigestValue().hashCode();
+        hash = 31 * hash + secondDigestValue().hashCode();
         return hash;
     }
 }

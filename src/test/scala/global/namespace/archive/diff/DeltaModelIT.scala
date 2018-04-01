@@ -11,25 +11,28 @@ import java.util.logging.{Level, Logger}
 import global.namespace.archive.diff.Archive.{decodeFromXml, encodeToXml}
 import global.namespace.archive.diff.DeltaModelIT._
 import global.namespace.archive.diff.it.ArchiveITContext
-import global.namespace.archive.diff.model.DeltaModel
+import global.namespace.archive.diff.model.{DeltaModel, EntryNameAndDigestValue, EntryNameAndTwoDigestValues}
 import global.namespace.fun.io.api.Store
 import global.namespace.fun.io.bios.BIOS.memoryStore
 import org.scalatest.Matchers.{theSameInstanceAs, _}
 import org.scalatest.WordSpec
+import org.scalatest.prop.PropertyChecks._
+
+import scala.collection.JavaConverters._
 
 /** @author Christian Schlichtherle */
 class DeltaModelIT extends WordSpec with ArchiveITContext {
 
-  "A delta model" when {
-    "constructed with no data" should {
-      "be round-trip XML-serializable" in {
-        assertRoundTripXmlSerializable(DeltaModel.builder.messageDigest(MessageDigest.getInstance("SHA-1")).build)
-      }
-    }
-
-    "computed from an archive file diff" should {
-      "be round-trip XML-serializable" in {
-        assertRoundTripXmlSerializable(deltaModel)
+  "A delta model" should {
+    "be round-trip XML serializable" in {
+      forAll(TestCases) { builder =>
+        val original = builder.messageDigest(sha1).build
+        val store = memoryStore
+        encodeToXml(original, store)
+        val clone = decodeFromXml(store)
+        logger.log(Level.FINE, "\n{0}", utf8String(store))
+        clone shouldBe original
+        clone should not be theSameInstanceAs(original)
       }
     }
   }
@@ -37,14 +40,17 @@ class DeltaModelIT extends WordSpec with ArchiveITContext {
 
 private object DeltaModelIT {
 
-  final def assertRoundTripXmlSerializable(original: DeltaModel) {
-    val store = memoryStore
-    encodeToXml(original, store)
-    val clone = decodeFromXml(store)
-    logger.log(Level.INFO, "\n{0}", utf8String(store))
-    clone shouldBe original
-    clone should not be theSameInstanceAs(original)
-  }
+  import DeltaModel.{builder => b}
+  val TestCases = Table(
+    "delta model builder",
+    b,
+    b.changedEntries(List(new EntryNameAndTwoDigestValues("changed", "1", "2")).asJava),
+    b.addedEntries(List(new EntryNameAndDigestValue("added", "1")).asJava),
+    b.removedEntries(List(new EntryNameAndDigestValue("removed", "1")).asJava),
+    b.unchangedEntries(List(new EntryNameAndDigestValue("unchanged", "1")).asJava)
+  )
+
+  val sha1: MessageDigest = MessageDigest getInstance "SHA-1"
 
   val logger: Logger = Logger.getLogger(getClass.getName)
 

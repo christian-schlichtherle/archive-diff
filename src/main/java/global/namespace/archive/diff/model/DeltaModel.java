@@ -75,7 +75,7 @@ public final class DeltaModel implements Serializable {
     private static Map<String, EntryNameAndTwoDigestValues> changedMap(final Collection<EntryNameAndTwoDigestValues> entries) {
         final Map<String, EntryNameAndTwoDigestValues> map = new LinkedHashMap<>(initialCapacity(entries));
         for (EntryNameAndTwoDigestValues entryNameAndTwoDigestValues : entries) {
-            map.put(entryNameAndTwoDigestValues.name(), entryNameAndTwoDigestValues);
+            map.put(entryNameAndTwoDigestValues.entryName(), entryNameAndTwoDigestValues);
         }
         return unmodifiableMap(map);
     }
