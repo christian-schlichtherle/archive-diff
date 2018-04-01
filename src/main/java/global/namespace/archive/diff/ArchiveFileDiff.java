@@ -24,8 +24,7 @@ import java.util.Optional;
 import java.util.TreeMap;
 import java.util.regex.Pattern;
 
-import static global.namespace.archive.diff.Archive.entrySink;
-import static global.namespace.archive.diff.Archive.entrySource;
+import static global.namespace.archive.diff.Archive.*;
 import static global.namespace.archive.diff.Copy.copy;
 
 /**
@@ -76,7 +75,7 @@ abstract class ArchiveFileDiff {
 
                 private final DeltaModel model = deltaModel();
 
-                private Streamer() throws Exception { model.encodeToXml(deltaSink(deltaEntry(DeltaModel.ENTRY_NAME))); }
+                private Streamer() throws Exception { encodeToXml(model, deltaSink(deltaEntry(DeltaModel.ENTRY_NAME))); }
 
                 private void stream() throws Exception {
                     for (final ArchiveEntry secondEntry : secondInput()) {

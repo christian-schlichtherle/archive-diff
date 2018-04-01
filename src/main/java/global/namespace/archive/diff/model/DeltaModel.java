@@ -4,16 +4,6 @@
  */
 package global.namespace.archive.diff.model;
 
-import global.namespace.fun.io.api.Sink;
-import global.namespace.fun.io.api.Source;
-
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import java.io.Serializable;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -22,8 +12,8 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
 
-import static global.namespace.fun.io.jaxb.JAXB.xmlCodec;
-import static java.util.Collections.*;
+import static java.util.Collections.emptyList;
+import static java.util.Collections.unmodifiableMap;
 import static java.util.Objects.requireNonNull;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
@@ -37,8 +27,6 @@ import static java.util.Optional.of;
  * @author Christian Schlichtherle
  */
 @SuppressWarnings({"OptionalUsedAsFieldOrParameterType", "ConstantConditions"})
-@XmlRootElement(name = "delta")
-@XmlAccessorType(XmlAccessType.FIELD)
 public final class DeltaModel implements Serializable {
 
     private static final long serialVersionUID = 0L;
@@ -49,27 +37,13 @@ public final class DeltaModel implements Serializable {
      */
     public static final String ENTRY_NAME = "META-INF/delta.xml";
 
-    @XmlAttribute(required = true)
     private final String algorithm;
 
-    @XmlAttribute
-    @XmlJavaTypeAdapter(OptionalIntegerAdapter.class)
     private final Optional<Integer> numBytes;
 
-    @XmlJavaTypeAdapter(EntryNameAndTwoDigestValuesMapAdapter.class)
     private final Map<String, EntryNameAndTwoDigestValues> changed;
 
-    @XmlJavaTypeAdapter(EntryNameAndDigestValueMapAdapter.class)
     private final Map<String, EntryNameAndDigestValue> unchanged, added, removed;
-
-    /** Required for JAXB. */
-    @SuppressWarnings("unused")
-    private DeltaModel() {
-        algorithm = "";
-        numBytes = empty();
-        changed = emptyMap();
-        unchanged = added = removed = emptyMap();
-    }
 
     private DeltaModel(final Builder b) {
         final MessageDigest digest = b.messageDigest.get();
@@ -98,26 +72,23 @@ public final class DeltaModel implements Serializable {
         }
     }
 
-    static Map<String, EntryNameAndTwoDigestValues> changedMap(
-            final Collection<EntryNameAndTwoDigestValues> entries) {
-        final Map<String, EntryNameAndTwoDigestValues> map =
-                new LinkedHashMap<>(initialCapacity(entries));
-        for (EntryNameAndTwoDigestValues entryNameAndTwoDigestValues : entries)
+    private static Map<String, EntryNameAndTwoDigestValues> changedMap(final Collection<EntryNameAndTwoDigestValues> entries) {
+        final Map<String, EntryNameAndTwoDigestValues> map = new LinkedHashMap<>(initialCapacity(entries));
+        for (EntryNameAndTwoDigestValues entryNameAndTwoDigestValues : entries) {
             map.put(entryNameAndTwoDigestValues.name(), entryNameAndTwoDigestValues);
+        }
         return unmodifiableMap(map);
     }
 
-    static Map<String, EntryNameAndDigestValue> unchangedMap(final Collection<EntryNameAndDigestValue> entries) {
-        final Map<String, EntryNameAndDigestValue> map =
-                new LinkedHashMap<>(initialCapacity(entries));
-        for (EntryNameAndDigestValue entryNameAndDigestValue : entries)
+    private static Map<String, EntryNameAndDigestValue> unchangedMap(final Collection<EntryNameAndDigestValue> entries) {
+        final Map<String, EntryNameAndDigestValue> map = new LinkedHashMap<>(initialCapacity(entries));
+        for (EntryNameAndDigestValue entryNameAndDigestValue : entries) {
             map.put(entryNameAndDigestValue.entryName(), entryNameAndDigestValue);
+        }
         return unmodifiableMap(map);
     }
 
-    private static int initialCapacity(Collection<?> c) {
-        return HashMaps.initialCapacity(c.size());
-    }
+    private static int initialCapacity(Collection<?> c) { return HashMaps.initialCapacity(c.size()); }
 
     /** Returns the message digest algorithm name. */
     public String digestAlgorithmName() { return algorithm; }
@@ -211,40 +182,6 @@ public final class DeltaModel implements Serializable {
         hash = 31 * hash + added.hashCode();
         hash = 31 * hash + removed.hashCode();
         return hash;
-    }
-
-    /**
-     * Encodes this delta model to XML.
-     *
-     * @param sink the sink for writing the XML.
-     * @throws Exception at the discretion of the JAXB codec, e.g. if the
-     *         sink isn't writable.
-     */
-    public void encodeToXml(Sink sink) throws Exception { xmlCodec(jaxbContext()).encoder(sink).encode(this); }
-
-    /**
-     * Decodes a delta model from XML.
-     *
-     * @param source the source for reading the XML.
-     * @return the decoded delta model.
-     * @throws Exception at the discretion of the JAXB codec, e.g. if the
-     *         source isn't readable.
-     */
-    public static DeltaModel decodeFromXml(Source source) throws Exception {
-        return xmlCodec(jaxbContext()).decoder(source).decode(DeltaModel.class);
-    }
-
-    /** Returns a JAXB context which binds only this class. */
-    public static JAXBContext jaxbContext() { return Lazy.JAXB_CONTEXT; }
-
-    private static class Lazy {
-
-        static final JAXBContext JAXB_CONTEXT;
-
-        static {
-            try { JAXB_CONTEXT = JAXBContext.newInstance(DeltaModel.class); }
-            catch (JAXBException ex) { throw new AssertionError(ex); }
-        }
     }
 
     /**

@@ -22,10 +22,10 @@ import java.security.DigestOutputStream;
 import java.security.MessageDigest;
 import java.util.Optional;
 
+import static global.namespace.archive.diff.Archive.decodeFromXml;
 import static global.namespace.archive.diff.Archive.entrySource;
 import static global.namespace.archive.diff.Copy.copy;
 import static global.namespace.archive.diff.model.DeltaModel.ENTRY_NAME;
-import static global.namespace.archive.diff.model.DeltaModel.decodeFromXml;
 
 /**
  * Patches a first archive file to a second archive file using a delta archive file.

@@ -4,20 +4,28 @@
  */
 package global.namespace.archive.diff;
 
+import global.namespace.archive.diff.model.DeltaModel;
+import global.namespace.archive.diff.model.dto.DeltaModelAdapter;
+import global.namespace.archive.diff.model.dto.DeltaModelDTO;
 import global.namespace.archive.diff.spi.ArchiveFileInput;
 import global.namespace.archive.diff.spi.ArchiveFileOutput;
 import global.namespace.archive.diff.spi.ArchiveFileStore;
+import global.namespace.fun.io.api.Codec;
+import global.namespace.fun.io.api.Sink;
 import global.namespace.fun.io.api.Socket;
+import global.namespace.fun.io.api.Source;
 import org.apache.commons.compress.archivers.ArchiveEntry;
 import org.apache.commons.compress.archivers.jar.JarArchiveOutputStream;
 import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream;
 import org.apache.commons.compress.archivers.zip.ZipFile;
 
+import javax.xml.bind.*;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+import static global.namespace.fun.io.jaxb.JAXB.xmlCodec;
 import static java.util.Objects.requireNonNull;
 
 /**
@@ -83,5 +91,26 @@ public class Archive {
 
             public Socket<OutputStream> output() { return output.output(entry); }
         };
+    }
+
+    static void encodeToXml(DeltaModel model, Sink sink ) throws Exception {
+        jaxbCodec().encoder(sink).encode(new DeltaModelAdapter().marshal(model));
+    }
+
+    static DeltaModel decodeFromXml(Source source) throws Exception {
+        return new DeltaModelAdapter().unmarshal(jaxbCodec().decoder(source).decode(DeltaModelDTO.class));
+    }
+
+    private static Codec jaxbCodec() throws JAXBException {
+        return xmlCodec(jaxbContext(), Archive::modifyMarshaller, Archive::unmarshallerModifier);
+    }
+
+    private static JAXBContext jaxbContext() throws JAXBException { return JAXBContext.newInstance(DeltaModelDTO.class); }
+
+    private static void modifyMarshaller(Marshaller m) throws PropertyException {
+        m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
+    }
+
+    private static void unmarshallerModifier(Unmarshaller u) {
     }
 }
