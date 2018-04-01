@@ -42,8 +42,8 @@ class ArchiveFilePatchIT extends WordSpec with ArchiveFileITContext {
             }
 
             val model = diff
-              .first(test2JarFileStore)
-              .second(secondJarFileStore)
+              .first(secondJarFileStore)
+              .second(test2JarFileStore)
               .digest(MessageDigest.getInstance("MD5"))
               .deltaModel
             model.changedEntries shouldBe empty
