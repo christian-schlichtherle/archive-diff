@@ -10,7 +10,7 @@ import java.util.logging.{Level, Logger}
 
 import global.namespace.archive.diff.Archive.{decodeFromXml, encodeToXml}
 import global.namespace.archive.diff.DeltaModelIT._
-import global.namespace.archive.diff.it.ArchiveFileITContext
+import global.namespace.archive.diff.it.ArchiveITContext
 import global.namespace.archive.diff.model.DeltaModel
 import global.namespace.fun.io.api.Store
 import global.namespace.fun.io.bios.BIOS.memoryStore
@@ -18,7 +18,7 @@ import org.scalatest.Matchers.{theSameInstanceAs, _}
 import org.scalatest.WordSpec
 
 /** @author Christian Schlichtherle */
-class DeltaModelIT extends WordSpec with ArchiveFileITContext {
+class DeltaModelIT extends WordSpec with ArchiveITContext {
 
   "A delta model" when {
     "constructed with no data" should {

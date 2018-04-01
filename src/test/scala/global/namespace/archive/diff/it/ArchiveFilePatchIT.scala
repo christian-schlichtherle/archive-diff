@@ -14,7 +14,7 @@ import org.scalatest.WordSpec
 import scala.collection.JavaConverters._
 
 /** @author Christian Schlichtherle */
-class ArchiveFilePatchIT extends WordSpec with ArchiveFileITContext {
+class ArchiveFilePatchIT extends WordSpec with ArchiveITContext {
 
   "An archive file diff and patch" when {
     "computing a delta-archive file first a first-archive file and a to-archive file and computing another to-archive file first the same first-archive file and the previously computed delta-archive file" should {
@@ -28,22 +28,22 @@ class ArchiveFilePatchIT extends WordSpec with ArchiveFileITContext {
             val secondJarFileStore = jar(secondJarFile)
 
             diff
-              .first(test1JarFileStore)
-              .second(test2JarFileStore)
+              .first(Test1Jar)
+              .second(Test2Jar)
               .to(deltaJarFileStore)
             patch
-              .first(test1JarFileStore)
+              .first(Test1Jar)
               .delta(deltaJarFileStore)
               .to(secondJarFileStore)
 
             val model = diff
-              .first(test2JarFileStore)
+              .first(Test2Jar)
               .second(secondJarFileStore)
               .digest(MessageDigest.getInstance("MD5"))
               .deltaModel
 
             val unchangedReference: List[String] = {
-              test2JarFileStore applyReader (_.asScala.filter(!_.isDirectory).map(_.getName).toList)
+              Test2Jar applyReader (_.asScala.filter(!_.isDirectory).map(_.getName).toList)
             }
 
             model.addedEntries shouldBe empty
