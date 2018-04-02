@@ -1,11 +1,11 @@
-package global.namespace.archive.diff.model.dto;
+package global.namespace.archive.diff.dto;
 
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
 import java.io.Serializable;
 
 @XmlRootElement(name = "delta")
-public class DeltaModelDTO implements Serializable {
+public final class DeltaModelDTO implements Serializable {
 
     @XmlAttribute(required = true)
     public String algorithm;

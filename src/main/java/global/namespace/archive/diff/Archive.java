@@ -4,9 +4,8 @@
  */
 package global.namespace.archive.diff;
 
+import global.namespace.archive.diff.dto.DeltaModelDTO;
 import global.namespace.archive.diff.model.DeltaModel;
-import global.namespace.archive.diff.model.dto.DeltaModelAdapter;
-import global.namespace.archive.diff.model.dto.DeltaModelDTO;
 import global.namespace.archive.diff.spi.ArchiveFileInput;
 import global.namespace.archive.diff.spi.ArchiveFileOutput;
 import global.namespace.archive.diff.spi.ArchiveFileStore;
@@ -94,11 +93,11 @@ public class Archive {
     }
 
     static void encodeToXml(DeltaModel model, Sink sink ) throws Exception {
-        jaxbCodec().encoder(sink).encode(new DeltaModelAdapter().marshal(model));
+        jaxbCodec().encoder(sink).encode(DeltaModelAdapter.marshal(model));
     }
 
     static DeltaModel decodeFromXml(Source source) throws Exception {
-        return new DeltaModelAdapter().unmarshal(jaxbCodec().decoder(source).decode(DeltaModelDTO.class));
+        return DeltaModelAdapter.unmarshal(jaxbCodec().decoder(source).decode(DeltaModelDTO.class));
     }
 
     private static Codec jaxbCodec() throws JAXBException {

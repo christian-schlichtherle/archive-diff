@@ -1,9 +1,9 @@
-package global.namespace.archive.diff.model.dto;
+package global.namespace.archive.diff.dto;
 
 import javax.xml.bind.annotation.XmlAttribute;
 import java.io.Serializable;
 
-public class EntryNameAndTwoDigestValuesDTO implements Serializable {
+public final class EntryNameAndTwoDigestValuesDTO implements Serializable {
 
     @XmlAttribute(required = true)
     public String name, first, second;
