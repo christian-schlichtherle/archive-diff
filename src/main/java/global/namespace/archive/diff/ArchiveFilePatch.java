@@ -24,8 +24,8 @@ import java.util.Optional;
 
 import static global.namespace.archive.diff.Archive.decodeFromXml;
 import static global.namespace.archive.diff.Archive.entrySource;
-import static global.namespace.archive.diff.Copy.copy;
 import static global.namespace.archive.diff.model.DeltaModel.ENTRY_NAME;
+import static global.namespace.fun.io.bios.BIOS.copy;
 
 /**
  * Patches a first archive file to a second archive file using a delta archive file.

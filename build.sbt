@@ -23,7 +23,7 @@ lazy val root: Project = project
   .settings(
     libraryDependencies ++= Seq(
       CommonsCompress,
-      FunIoBios % Test,
+      FunIoBios,
       FunIoJaxb,
       Scalacheck % Test,
       Scalatest % Test

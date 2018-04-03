@@ -25,7 +25,7 @@ import java.util.TreeMap;
 import java.util.regex.Pattern;
 
 import static global.namespace.archive.diff.Archive.*;
-import static global.namespace.archive.diff.Copy.copy;
+import static global.namespace.fun.io.bios.BIOS.copy;
 
 /**
  * Compares a first archive file to a second archive file and generates a delta archive file.
