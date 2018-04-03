@@ -30,7 +30,7 @@ class DeltaModelDtoAdapter {
         } else {
             final DeltaModelDTO dto = new DeltaModelDTO();
             dto.algorithm = v.digestAlgorithmName();
-            dto.numBytes = v.digestByteLength().orElse(null);
+            dto.numBytes = v.digestByteLength().orElse(0);
             dto.changed = marshal2(v.changedEntries());
             dto.unchanged = marshal(v.unchangedEntries());
             dto.added = marshal(v.addedEntries());

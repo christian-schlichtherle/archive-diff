@@ -11,7 +11,7 @@ public final class DeltaModelDTO implements Serializable {
 
     public String algorithm;
 
-    public Integer numBytes;
+    public int numBytes;
 
     public EntryNameAndTwoDigestValuesDTO[] changed;
 
