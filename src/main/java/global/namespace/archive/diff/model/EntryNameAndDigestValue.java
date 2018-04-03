@@ -13,8 +13,6 @@ import static java.util.Objects.requireNonNull;
  */
 public final class EntryNameAndDigestValue {
 
-    private static final long serialVersionUID = 0L;
-
     private final String entryName, digestValue;
 
     public EntryNameAndDigestValue(final String entryName, final String digestValue) {

@@ -1,19 +1,19 @@
+/*
+ * Copyright (C) 2013-2018 Schlichtherle IT Services.
+ * All rights reserved. Use is subject to license terms.
+ */
 package global.namespace.archive.diff.dto;
 
-import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlRootElement;
 import java.io.Serializable;
 
-@XmlRootElement(name = "delta")
+/** @author Christian Schlichtherle */
 public final class DeltaModelDTO implements Serializable {
 
-    @XmlAttribute(required = true)
     public String algorithm;
 
-    @XmlAttribute
     public Integer numBytes;
 
-    public EntryNameAndTwoDigestValuesListDTO changed;
+    public EntryNameAndTwoDigestValuesDTO[] changed;
 
-    public EntryNameAndDigestValueListDTO unchanged, added, removed;
+    public EntryNameAndDigestValueDTO[] unchanged, added, removed;
 }

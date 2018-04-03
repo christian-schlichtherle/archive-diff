@@ -4,20 +4,25 @@
  */
 package global.namespace.archive.diff;
 
-import global.namespace.archive.diff.dto.*;
+import global.namespace.archive.diff.dto.DeltaModelDTO;
+import global.namespace.archive.diff.dto.EntryNameAndDigestValueDTO;
+import global.namespace.archive.diff.dto.EntryNameAndTwoDigestValuesDTO;
 import global.namespace.archive.diff.model.DeltaModel;
 import global.namespace.archive.diff.model.EntryNameAndDigestValue;
 import global.namespace.archive.diff.model.EntryNameAndTwoDigestValues;
 
 import java.security.MessageDigest;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 import java.util.stream.Collectors;
 
 import static java.util.Collections.emptyList;
 
-class DeltaModelAdapter {
+/** @author Christian Schlichtherle */
+class DeltaModelDtoAdapter {
 
-    private DeltaModelAdapter() { }
+    private DeltaModelDtoAdapter() { }
 
     static DeltaModelDTO marshal(final DeltaModel v) {
         if (null == v) {
@@ -49,47 +54,41 @@ class DeltaModelAdapter {
         }
     }
 
-    private static EntryNameAndTwoDigestValuesListDTO marshal2(final Collection<EntryNameAndTwoDigestValues> v) {
+    private static EntryNameAndTwoDigestValuesDTO[] marshal2(final Collection<EntryNameAndTwoDigestValues> v) {
         if (null == v || v.isEmpty()) {
             return null;
         } else {
-            final EntryNameAndTwoDigestValuesListDTO listDTO = new EntryNameAndTwoDigestValuesListDTO();
-            listDTO.entries = v.stream().map(entry -> {
+            return v.stream().map(entry -> {
                 final EntryNameAndTwoDigestValuesDTO dto = new EntryNameAndTwoDigestValuesDTO();
                 dto.name = entry.entryName();
                 dto.first = entry.firstDigestValue();
                 dto.second = entry.secondDigestValue();
                 return dto;
-            }).collect(Collectors.toList());
-            return listDTO;
+            }).toArray(EntryNameAndTwoDigestValuesDTO[]::new);
         }
     }
 
-    private static Collection<EntryNameAndTwoDigestValues> unmarshal2(EntryNameAndTwoDigestValuesListDTO v) {
-        return null == v ? emptyList() : v.entries
-                .stream()
+    private static List<EntryNameAndTwoDigestValues> unmarshal2(EntryNameAndTwoDigestValuesDTO[] v) {
+        return null == v ? emptyList() : Arrays.stream(v)
                 .map(dto -> new EntryNameAndTwoDigestValues(dto.name, dto.first, dto.second))
                 .collect(Collectors.toList());
     }
 
-    private static EntryNameAndDigestValueListDTO marshal(final Collection<EntryNameAndDigestValue> v) {
+    private static EntryNameAndDigestValueDTO[] marshal(final Collection<EntryNameAndDigestValue> v) {
         if (null == v || v.isEmpty()) {
             return null;
         } else {
-            final EntryNameAndDigestValueListDTO listDTO = new EntryNameAndDigestValueListDTO();
-            listDTO.entries = v.stream().map(entry -> {
+            return v.stream().map(entry -> {
                 final EntryNameAndDigestValueDTO dto = new EntryNameAndDigestValueDTO();
                 dto.name = entry.entryName();
                 dto.digest = entry.digestValue();
                 return dto;
-            }).collect(Collectors.toList());
-            return listDTO;
+            }).toArray(EntryNameAndDigestValueDTO[]::new);
         }
     }
 
-    private static Collection<EntryNameAndDigestValue> unmarshal(EntryNameAndDigestValueListDTO v) {
-        return null == v ? emptyList() : v.entries
-                .stream()
+    private static List<EntryNameAndDigestValue> unmarshal(EntryNameAndDigestValueDTO[] v) {
+        return null == v ? emptyList() : Arrays.stream(v)
                 .map(dto -> new EntryNameAndDigestValue(dto.name, dto.digest))
                 .collect(Collectors.toList());
     }

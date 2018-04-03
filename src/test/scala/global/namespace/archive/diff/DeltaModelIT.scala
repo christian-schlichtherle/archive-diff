@@ -8,7 +8,7 @@ import java.nio.charset.Charset
 import java.security.MessageDigest
 import java.util.logging.{Level, Logger}
 
-import global.namespace.archive.diff.Archive.{decodeFromXml, encodeToXml}
+import global.namespace.archive.diff.Archive.{decode, encode}
 import global.namespace.archive.diff.DeltaModelIT._
 import global.namespace.archive.diff.it.ArchiveITContext
 import global.namespace.archive.diff.model.{DeltaModel, EntryNameAndDigestValue, EntryNameAndTwoDigestValues}
@@ -28,8 +28,8 @@ class DeltaModelIT extends WordSpec with ArchiveITContext {
       forAll(TestCases) { builder =>
         val original = builder.messageDigest(sha1).build
         val store = memoryStore
-        encodeToXml(original, store)
-        val clone = decodeFromXml(store)
+        encode(store, original)
+        val clone = decode(store)
         logger.log(Level.FINE, "\n{0}", utf8String(store))
         clone shouldBe original
         clone should not be theSameInstanceAs(original)

@@ -4,6 +4,8 @@
  */
 package global.namespace.archive.diff;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import global.namespace.archive.diff.dto.DeltaModelDTO;
 import global.namespace.archive.diff.model.DeltaModel;
 import global.namespace.archive.diff.spi.ArchiveFileInput;
@@ -13,18 +15,17 @@ import global.namespace.fun.io.api.Codec;
 import global.namespace.fun.io.api.Sink;
 import global.namespace.fun.io.api.Socket;
 import global.namespace.fun.io.api.Source;
+import global.namespace.fun.io.jackson.Jackson;
 import org.apache.commons.compress.archivers.ArchiveEntry;
 import org.apache.commons.compress.archivers.jar.JarArchiveOutputStream;
 import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream;
 import org.apache.commons.compress.archivers.zip.ZipFile;
 
-import javax.xml.bind.*;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-import static global.namespace.fun.io.jaxb.JAXB.xmlCodec;
 import static java.util.Objects.requireNonNull;
 
 /**
@@ -35,6 +36,12 @@ import static java.util.Objects.requireNonNull;
 public class Archive {
 
     private Archive() { }
+
+    /**
+     * The name of the entry which contains the serialized delta model in a delta-archive file.
+     * This should be the first entry in the delta-archive file.
+     */
+    private static final String ENTRY_NAME = "META-INF/delta.json";
 
     /** Returns an archive file store for the given JAR file. */
     public static ArchiveFileStore jar(final File file) {
@@ -74,16 +81,7 @@ public class Archive {
     /** Returns a builder for patching the first archive file to a second archive file using a delta archive file. */
     public static ArchiveFilePatchBuilder patch() { return new ArchiveFilePatchBuilder(); }
 
-    static ArchiveEntrySource entrySource(ArchiveEntry entry, ArchiveFileInput input) {
-        return new ArchiveEntrySource() {
-
-            public String name() { return entry.getName(); }
-
-            public Socket<InputStream> input() { return input.input(entry); }
-        };
-    }
-
-    static ArchiveEntrySink entrySink(ArchiveEntry entry, ArchiveFileOutput output) {
+    static ArchiveEntrySink entrySink(ArchiveFileOutput output, ArchiveEntry entry) {
         return new ArchiveEntrySink() {
 
             public String name() { return entry.getName(); }
@@ -92,24 +90,43 @@ public class Archive {
         };
     }
 
-    static void encodeToXml(DeltaModel model, Sink sink ) throws Exception {
-        jaxbCodec().encoder(sink).encode(DeltaModelAdapter.marshal(model));
+    static ArchiveEntrySource entrySource(ArchiveFileInput input, ArchiveEntry entry) {
+        return new ArchiveEntrySource() {
+
+            public String name() { return entry.getName(); }
+
+            public Socket<InputStream> input() { return input.input(entry); }
+        };
     }
 
-    static DeltaModel decodeFromXml(Source source) throws Exception {
-        return DeltaModelAdapter.unmarshal(jaxbCodec().decoder(source).decode(DeltaModelDTO.class));
+    static void encode(ArchiveFileOutput output, DeltaModel model) throws Exception {
+        encode(entrySink(output, output.entry(ENTRY_NAME)), model);
     }
 
-    private static Codec jaxbCodec() throws JAXBException {
-        return xmlCodec(jaxbContext(), Archive::modifyMarshaller, Archive::unmarshallerModifier);
+    static void encode(Sink sink, DeltaModel model) throws Exception {
+        encodeDTO(sink, DeltaModelDtoAdapter.marshal(model));
     }
 
-    private static JAXBContext jaxbContext() throws JAXBException { return JAXBContext.newInstance(DeltaModelDTO.class); }
-
-    private static void modifyMarshaller(Marshaller m) throws PropertyException {
-        m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
+    private static void encodeDTO(Sink sink, DeltaModelDTO dto) throws Exception {
+        jsonCodec().encoder(sink).encode(dto);
     }
 
-    private static void unmarshallerModifier(Unmarshaller u) {
+    static DeltaModel decode(ArchiveFileInput input) throws Exception {
+        return decode(entrySource(input, input.entry(ENTRY_NAME).orElseThrow(() ->
+                new InvalidDeltaArchiveFileException(new MissingArchiveEntryException(ENTRY_NAME)))));
+    }
+
+    static DeltaModel decode(Source source) throws Exception {
+        return DeltaModelDtoAdapter.unmarshal(decodeDTO(source));
+    }
+
+    private static DeltaModelDTO decodeDTO(Source source) throws Exception {
+        return jsonCodec().decoder(source).decode(DeltaModelDTO.class);
+    }
+
+    private static Codec jsonCodec() {
+        final ObjectMapper mapper = new ObjectMapper();
+        mapper.setSerializationInclusion(JsonInclude.Include.NON_DEFAULT);
+        return Jackson.jsonCodec(mapper);
     }
 }

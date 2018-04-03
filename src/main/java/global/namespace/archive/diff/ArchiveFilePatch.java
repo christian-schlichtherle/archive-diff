@@ -22,9 +22,7 @@ import java.security.DigestOutputStream;
 import java.security.MessageDigest;
 import java.util.Optional;
 
-import static global.namespace.archive.diff.Archive.decodeFromXml;
 import static global.namespace.archive.diff.Archive.entrySource;
-import static global.namespace.archive.diff.model.DeltaModel.ENTRY_NAME;
 import static global.namespace.fun.io.bios.BIOS.copy;
 
 /**
@@ -39,7 +37,7 @@ abstract class ArchiveFilePatch {
     abstract ArchiveFileSource deltaSource();
 
     void to(ArchiveFileSink second) throws Exception {
-        accept(engine -> second.acceptWriter(engine::patchTo));
+        accept(engine -> second.acceptWriter(engine::to));
     }
 
     private void accept(final XConsumer<Engine> consumer) throws Exception {
@@ -61,9 +59,9 @@ abstract class ArchiveFilePatch {
 
         abstract ArchiveFileInput deltaInput();
 
-        void patchTo(final ArchiveFileOutput secondOutput) throws Exception {
+        void to(final ArchiveFileOutput secondOutput) throws Exception {
             for (EntryNameFilter filter : passFilters(secondOutput)) {
-                patchTo(secondOutput, new NoDirectoryEntryNameFilter(filter));
+                to(secondOutput, new NoDirectoryEntryNameFilter(filter));
             }
         }
 
@@ -92,7 +90,7 @@ abstract class ArchiveFilePatch {
             }
         }
 
-        void patchTo(final ArchiveFileOutput secondOutput, final EntryNameFilter filter) throws Exception {
+        void to(final ArchiveFileOutput secondOutput, final EntryNameFilter filter) throws Exception {
 
             class MyArchiveEntrySink implements Sink {
 
@@ -148,8 +146,8 @@ abstract class ArchiveFilePatch {
                         final Optional<ArchiveEntry> entry = input().entry(name);
                         try {
                             copy(
-                                    entrySource(entry.orElseThrow(() ->
-                                            ioException(new MissingArchiveEntryException(name))), input()),
+                                    entrySource(input(), entry.orElseThrow(() ->
+                                            ioException(new MissingArchiveEntryException(name)))),
                                     new MyArchiveEntrySink(entryNameAndDigestValue)
                             );
                         } catch (WrongMessageDigestException e) {
@@ -189,16 +187,7 @@ abstract class ArchiveFilePatch {
 
         DeltaModel model() throws Exception {
             final DeltaModel model = this.model;
-            return null != model ? model : (this.model = loadModel());
-        }
-
-        DeltaModel loadModel() throws Exception {
-            return decodeFromXml(entrySource(modelArchiveEntry(), deltaInput()));
-        }
-
-        ArchiveEntry modelArchiveEntry() throws Exception {
-            return deltaInput().entry(ENTRY_NAME).orElseThrow(() ->
-                    new InvalidDeltaArchiveFileException(new MissingArchiveEntryException(ENTRY_NAME)));
+            return null != model ? model : (this.model = Archive.decode(deltaInput()));
         }
     }
 }

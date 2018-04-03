@@ -4,7 +4,6 @@
  */
 package global.namespace.archive.diff.model;
 
-import java.io.Serializable;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Collection;
@@ -27,15 +26,7 @@ import static java.util.Optional.of;
  * @author Christian Schlichtherle
  */
 @SuppressWarnings({"OptionalUsedAsFieldOrParameterType", "ConstantConditions"})
-public final class DeltaModel implements Serializable {
-
-    private static final long serialVersionUID = 0L;
-
-    /**
-     * The name of the entry which contains the marshalled delta model in a delta-archive file.
-     * This should be the first entry in the delta-archive file.
-     */
-    public static final String ENTRY_NAME = "META-INF/delta.xml";
+public final class DeltaModel {
 
     private final String algorithm;
 

@@ -1,10 +1,13 @@
+/*
+ * Copyright (C) 2013-2018 Schlichtherle IT Services.
+ * All rights reserved. Use is subject to license terms.
+ */
 package global.namespace.archive.diff.dto;
 
-import javax.xml.bind.annotation.XmlAttribute;
 import java.io.Serializable;
 
+/** @author Christian Schlichtherle */
 public final class EntryNameAndTwoDigestValuesDTO implements Serializable {
 
-    @XmlAttribute(required = true)
     public String name, first, second;
 }

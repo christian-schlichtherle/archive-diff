@@ -45,7 +45,7 @@ abstract class ArchiveFileDiff {
 
     void to(ArchiveFileSink delta) throws Exception {
         apply(engine -> {
-            delta.acceptWriter(engine::diffTo);
+            delta.acceptWriter(engine::to);
             return null;
         });
     }
@@ -69,13 +69,13 @@ abstract class ArchiveFileDiff {
 
         abstract ArchiveFileInput secondInput();
 
-        void diffTo(final ArchiveFileOutput deltaOutput) throws Exception {
+        void to(final ArchiveFileOutput deltaOutput) throws Exception {
 
             final class Streamer {
 
                 private final DeltaModel model = deltaModel();
 
-                private Streamer() throws Exception { encodeToXml(model, deltaSink(deltaEntry(DeltaModel.ENTRY_NAME))); }
+                private Streamer() throws Exception { encode(deltaOutput, model); }
 
                 private void stream() throws Exception {
                     for (final ArchiveEntry secondEntry : secondInput()) {
@@ -99,12 +99,10 @@ abstract class ArchiveFileDiff {
                 }
 
                 private Source secondSource(ArchiveEntry secondEntry) {
-                    return entrySource(secondEntry, secondInput());
+                    return entrySource(secondInput(), secondEntry);
                 }
 
-                private Sink deltaSink(ArchiveEntry deltaEntry) {
-                    return entrySink(deltaEntry, deltaOutput);
-                }
+                private Sink deltaSink(ArchiveEntry deltaEntry) { return entrySink(deltaOutput, deltaEntry); }
 
                 private ArchiveEntry deltaEntry(String name) { return deltaOutput.entry(name); }
 
@@ -131,9 +129,9 @@ abstract class ArchiveFileDiff {
                         continue;
                     }
                     final Optional<ArchiveEntry> secondEntry = secondInput().entry(firstEntry.getName());
-                    final ArchiveEntrySource firstSource = entrySource(firstEntry, firstInput());
+                    final ArchiveEntrySource firstSource = entrySource(firstInput(), firstEntry);
                     if (secondEntry.isPresent()) {
-                        final ArchiveEntrySource secondSource = entrySource(secondEntry.get(), secondInput());
+                        final ArchiveEntrySource secondSource = entrySource(secondInput(), secondEntry.get());
                         assembly.visitEntriesInBothFiles(firstSource, secondSource);
                     } else {
                         assembly.visitEntryInFirstFile(firstSource);
@@ -146,7 +144,7 @@ abstract class ArchiveFileDiff {
                     }
                     final Optional<ArchiveEntry> firstEntry = firstInput().entry(secondEntry.getName());
                     if (!firstEntry.isPresent()) {
-                        final ArchiveEntrySource secondSource = entrySource(secondEntry, secondInput());
+                        final ArchiveEntrySource secondSource = entrySource(secondInput(), secondEntry);
                         assembly.visitEntryInSecondFile(secondSource);
                     }
                 }

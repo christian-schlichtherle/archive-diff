@@ -30,7 +30,7 @@ class HashMaps {
      * @return The initial capacity for a hash table with a load factor of 75%.
      * @see    #OVERHEAD_SIZE
      */
-    public static int initialCapacity(int size) {
+    static int initialCapacity(int size) {
         if (size < OVERHEAD_SIZE)
             size = OVERHEAD_SIZE;
         final long capacity = size * 4L / 3 + 1;
