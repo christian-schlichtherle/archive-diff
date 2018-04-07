@@ -4,17 +4,13 @@
  */
 package global.namespace.archive.diff;
 
+import global.namespace.archive.api.*;
 import global.namespace.archive.diff.model.DeltaModel;
 import global.namespace.archive.diff.model.EntryNameAndDigestValue;
 import global.namespace.archive.diff.model.EntryNameAndTwoDigestValues;
-import global.namespace.archive.diff.spi.ArchiveFileInput;
-import global.namespace.archive.diff.spi.ArchiveFileOutput;
-import global.namespace.archive.diff.spi.ArchiveFileSink;
-import global.namespace.archive.diff.spi.ArchiveFileSource;
 import global.namespace.fun.io.api.Sink;
 import global.namespace.fun.io.api.Source;
 import global.namespace.fun.io.api.function.XFunction;
-import org.apache.commons.compress.archivers.ArchiveEntry;
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
 import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream;
 
@@ -32,18 +28,18 @@ import static global.namespace.fun.io.bios.BIOS.copy;
  *
  * @author Christian Schlichtherle
  */
-abstract class ArchiveFileDiff {
+abstract class ArchiveFileDiff<F, S, D> {
 
     private static final Pattern COMPRESSED_FILE_EXTENSIONS =
             Pattern.compile(".*\\.(ear|jar|war|zip|gz|xz)", Pattern.CASE_INSENSITIVE);
 
     abstract MessageDigest digest();
 
-    abstract ArchiveFileSource firstSource();
+    abstract ArchiveFileSource<F> firstSource();
 
-    abstract ArchiveFileSource secondSource();
+    abstract ArchiveFileSource<S> secondSource();
 
-    void to(ArchiveFileSink delta) throws Exception {
+    void to(ArchiveFileSink<D> delta) throws Exception {
         apply(engine -> {
             delta.acceptWriter(engine::to);
             return null;
@@ -56,20 +52,20 @@ abstract class ArchiveFileDiff {
         return firstSource().applyReader(firstInput -> secondSource().applyReader(secondInput -> function.apply(
                 new Engine() {
 
-                    ArchiveFileInput firstInput() { return firstInput; }
+                    ArchiveFileInput<F> firstInput() { return firstInput; }
 
-                    ArchiveFileInput secondInput() { return secondInput; }
+                    ArchiveFileInput<S> secondInput() { return secondInput; }
                 }
         )));
     }
 
     private abstract class Engine {
 
-        abstract ArchiveFileInput firstInput();
+        abstract ArchiveFileInput<F> firstInput();
 
-        abstract ArchiveFileInput secondInput();
+        abstract ArchiveFileInput<S> secondInput();
 
-        void to(final ArchiveFileOutput deltaOutput) throws Exception {
+        void to(final ArchiveFileOutput<D> deltaOutput) throws Exception {
 
             final class Streamer {
 
@@ -78,14 +74,14 @@ abstract class ArchiveFileDiff {
                 private Streamer() throws Exception { encode(deltaOutput, model); }
 
                 private void stream() throws Exception {
-                    for (final ArchiveEntry secondEntry : secondInput()) {
-                        final String name = secondEntry.getName();
+                    for (final ArchiveFileEntry<S> secondEntry : secondInput()) {
+                        final String name = secondEntry.name();
                         if (changedOrAdded(name)) {
-                            final ArchiveEntry deltaEntry = deltaEntry(name);
-                            if (secondEntry instanceof ZipArchiveEntry && deltaEntry instanceof ZipArchiveEntry &&
+                            final ArchiveFileEntry<D> deltaEntry = deltaEntry(name);
+                            if (secondEntry.entry() instanceof ZipArchiveEntry && deltaEntry.entry() instanceof ZipArchiveEntry &&
                                     COMPRESSED_FILE_EXTENSIONS.matcher(name).matches()) {
-                                final ZipArchiveEntry secondZipEntry = (ZipArchiveEntry) secondEntry;
-                                final ZipArchiveEntry deltaZipEntry = (ZipArchiveEntry) deltaEntry;
+                                final ZipArchiveEntry secondZipEntry = (ZipArchiveEntry) secondEntry.entry();
+                                final ZipArchiveEntry deltaZipEntry = (ZipArchiveEntry) deltaEntry.entry();
                                 final long size = secondZipEntry.getSize();
 
                                 deltaZipEntry.setMethod(ZipArchiveOutputStream.STORED);
@@ -98,13 +94,13 @@ abstract class ArchiveFileDiff {
                     }
                 }
 
-                private Source secondSource(ArchiveEntry secondEntry) {
+                private Source secondSource(ArchiveFileEntry<S> secondEntry) {
                     return entrySource(secondInput(), secondEntry);
                 }
 
-                private Sink deltaSink(ArchiveEntry deltaEntry) { return entrySink(deltaOutput, deltaEntry); }
+                private Sink deltaSink(ArchiveFileEntry<D> deltaEntry) { return entrySink(deltaOutput, deltaEntry); }
 
-                private ArchiveEntry deltaEntry(String name) { return deltaOutput.entry(name); }
+                private ArchiveFileEntry<D> deltaEntry(String name) { return deltaOutput.entry(name); }
 
                 private boolean changedOrAdded(String name) {
                     return null != model.changed(name) || null != model.added(name);
@@ -124,11 +120,11 @@ abstract class ArchiveFileDiff {
              * the caller.
              */
             Assembly walkAndReturn(final Assembly assembly) throws Exception {
-                for (final ArchiveEntry firstEntry : firstInput()) {
+                for (final ArchiveFileEntry<F> firstEntry : firstInput()) {
                     if (firstEntry.isDirectory()) {
                         continue;
                     }
-                    final Optional<ArchiveEntry> secondEntry = secondInput().entry(firstEntry.getName());
+                    final Optional<ArchiveFileEntry<S>> secondEntry = secondInput().entry(firstEntry.name());
                     final ArchiveEntrySource firstSource = entrySource(firstInput(), firstEntry);
                     if (secondEntry.isPresent()) {
                         final ArchiveEntrySource secondSource = entrySource(secondInput(), secondEntry.get());
@@ -138,11 +134,11 @@ abstract class ArchiveFileDiff {
                     }
                 }
 
-                for (final ArchiveEntry secondEntry : secondInput()) {
+                for (final ArchiveFileEntry<S> secondEntry : secondInput()) {
                     if (secondEntry.isDirectory()) {
                         continue;
                     }
-                    final Optional<ArchiveEntry> firstEntry = firstInput().entry(secondEntry.getName());
+                    final Optional<ArchiveFileEntry<F>> firstEntry = firstInput().entry(secondEntry.name());
                     if (!firstEntry.isPresent()) {
                         final ArchiveEntrySource secondSource = entrySource(secondInput(), secondEntry);
                         assembly.visitEntryInSecondFile(secondSource);

@@ -8,6 +8,7 @@ import java.io._
 import java.security.MessageDigest
 
 import global.namespace.archive.diff.Archive._
+import global.namespace.archive.commons.compress.CommonsCompress._
 import org.scalatest.Matchers._
 import org.scalatest.WordSpec
 
@@ -37,7 +38,7 @@ class ArchiveFilePatchIT extends WordSpec with ArchiveITContext {
               .to(secondJarFileStore)
 
             val unchangedReference: List[String] = {
-              Test2Jar applyReader (_.asScala.filter(!_.isDirectory).map(_.getName).toList)
+              Test2Jar applyReader (_.asScala.filter(!_.isDirectory).map(_.name).toList)
             }
 
             val model = diff

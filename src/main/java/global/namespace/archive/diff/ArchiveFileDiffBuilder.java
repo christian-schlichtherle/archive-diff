@@ -1,8 +1,8 @@
 package global.namespace.archive.diff;
 
+import global.namespace.archive.api.ArchiveFileSink;
+import global.namespace.archive.api.ArchiveFileSource;
 import global.namespace.archive.diff.model.DeltaModel;
-import global.namespace.archive.diff.spi.ArchiveFileSink;
-import global.namespace.archive.diff.spi.ArchiveFileSource;
 
 import java.security.MessageDigest;
 import java.util.Optional;
@@ -20,7 +20,7 @@ public class ArchiveFileDiffBuilder {
 
     private Optional<MessageDigest> digest = empty();
 
-    private Optional<ArchiveFileSource> first = empty(), second = empty();
+    private Optional<ArchiveFileSource<?>> first = empty(), second = empty();
 
     ArchiveFileDiffBuilder() { }
 
@@ -31,19 +31,19 @@ public class ArchiveFileDiffBuilder {
     }
 
     /** Returns this archive file diff builder with the given source for reading the first archive file. */
-    public ArchiveFileDiffBuilder first(final ArchiveFileSource first) {
+    public ArchiveFileDiffBuilder first(final ArchiveFileSource<?> first) {
         this.first = Optional.of(first);
         return this;
     }
 
     /** Returns this archive file diff builder with the given source for reading the second archive file. */
-    public ArchiveFileDiffBuilder second(final ArchiveFileSource second) {
+    public ArchiveFileDiffBuilder second(final ArchiveFileSource<?> second) {
         this.second = Optional.of(second);
         return this;
     }
 
     /** Writes the delta archive file computed from the first and second archive file to the given sink. */
-    public void to(ArchiveFileSink delta) throws Exception { build().to(delta); }
+    public void to(ArchiveFileSink<?> delta) throws Exception { build().to(delta); }
 
     /** Returns the delta model computed from the first and second archive file. */
     public DeltaModel deltaModel() throws Exception { return build().deltaModel(); }
@@ -53,15 +53,15 @@ public class ArchiveFileDiffBuilder {
     }
 
     private static ArchiveFileDiff create(MessageDigest digest,
-                                          ArchiveFileSource firstSource,
-                                          ArchiveFileSource secondSource) {
+                                          ArchiveFileSource<?> firstSource,
+                                          ArchiveFileSource<?> secondSource) {
         return new ArchiveFileDiff() {
 
             MessageDigest digest() { return digest; }
 
-            ArchiveFileSource firstSource() { return firstSource; }
+            ArchiveFileSource<?> firstSource() { return firstSource; }
 
-            ArchiveFileSource secondSource() { return secondSource; }
+            ArchiveFileSource<?> secondSource() { return secondSource; }
         };
     }
 }

@@ -3,9 +3,9 @@
  * All rights reserved. Use is subject to license terms.
  */
 /**
- * Diffs and patches archive files.
+ * Provides access to JAR and ZIP files using Apache Commons Compress.
  *
  * @see global.namespace.archive.diff.Archive
  * @author Christian Schlichtherle
  */
-package global.namespace.archive.diff;
+package global.namespace.archive.commons.compress;

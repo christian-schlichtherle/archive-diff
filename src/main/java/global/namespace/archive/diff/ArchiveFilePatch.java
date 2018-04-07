@@ -4,16 +4,12 @@
  */
 package global.namespace.archive.diff;
 
+import global.namespace.archive.api.*;
 import global.namespace.archive.diff.model.DeltaModel;
 import global.namespace.archive.diff.model.EntryNameAndDigestValue;
-import global.namespace.archive.diff.spi.ArchiveFileInput;
-import global.namespace.archive.diff.spi.ArchiveFileOutput;
-import global.namespace.archive.diff.spi.ArchiveFileSink;
-import global.namespace.archive.diff.spi.ArchiveFileSource;
 import global.namespace.fun.io.api.Sink;
 import global.namespace.fun.io.api.Socket;
 import global.namespace.fun.io.api.function.XConsumer;
-import org.apache.commons.compress.archivers.ArchiveEntry;
 import org.apache.commons.compress.archivers.jar.JarArchiveEntry;
 
 import java.io.IOException;
@@ -30,13 +26,13 @@ import static global.namespace.fun.io.bios.BIOS.copy;
  *
  * @author Christian Schlichtherle
  */
-abstract class ArchiveFilePatch {
+abstract class ArchiveFilePatch<F, D, S> {
 
-    abstract ArchiveFileSource firstSource();
+    abstract ArchiveFileSource<F> firstSource();
 
-    abstract ArchiveFileSource deltaSource();
+    abstract ArchiveFileSource<D> deltaSource();
 
-    void to(ArchiveFileSink second) throws Exception {
+    void to(ArchiveFileSink<S> second) throws Exception {
         accept(engine -> second.acceptWriter(engine::to));
     }
 
@@ -44,22 +40,22 @@ abstract class ArchiveFilePatch {
         firstSource().acceptReader(firstInput -> deltaSource().acceptReader(deltaInput -> consumer.accept(
                 new Engine() {
 
-                    ArchiveFileInput firstInput() { return firstInput; }
+                    ArchiveFileInput<F> firstInput() { return firstInput; }
 
-                    ArchiveFileInput deltaInput() { return deltaInput; }
+                    ArchiveFileInput<D> deltaInput() { return deltaInput; }
                 }
         )));
     }
 
-    private abstract static class Engine {
+    private abstract class Engine {
 
         DeltaModel model;
 
-        abstract ArchiveFileInput firstInput();
+        abstract ArchiveFileInput<F> firstInput();
 
-        abstract ArchiveFileInput deltaInput();
+        abstract ArchiveFileInput<D> deltaInput();
 
-        void to(final ArchiveFileOutput secondOutput) throws Exception {
+        void to(final ArchiveFileOutput<S> secondOutput) throws Exception {
             for (EntryNameFilter filter : passFilters(secondOutput)) {
                 to(secondOutput, new NoDirectoryEntryNameFilter(filter));
             }
@@ -71,8 +67,8 @@ abstract class ArchiveFilePatch {
          * The filters should properly partition the set of entry sources, i.e. each entry source should be accepted by
          * exactly one filter.
          */
-        EntryNameFilter[] passFilters(final ArchiveFileOutput secondOutput) {
-            if (secondOutput.entry("") instanceof JarArchiveEntry) {
+        EntryNameFilter[] passFilters(final ArchiveFileOutput<S> secondOutput) {
+            if (secondOutput.entry("").entry() instanceof JarArchiveEntry) {
                 // The JarInputStream class assumes that the file entry
                 // "META-INF/MANIFEST.MF" should either be the first or the second
                 // entry (if preceded by the directory entry "META-INF/"), so we
@@ -90,7 +86,7 @@ abstract class ArchiveFilePatch {
             }
         }
 
-        void to(final ArchiveFileOutput secondOutput, final EntryNameFilter filter) throws Exception {
+        void to(final ArchiveFileOutput<S> secondOutput, final EntryNameFilter filter) throws Exception {
 
             class MyArchiveEntrySink implements Sink {
 
@@ -103,7 +99,7 @@ abstract class ArchiveFilePatch {
 
                 @Override
                 public Socket<OutputStream> output() {
-                    final ArchiveEntry secondEntry = secondEntry(entryNameAndDigest.entryName());
+                    final ArchiveFileEntry<S> secondEntry = secondEntry(entryNameAndDigest.entryName());
                     return secondSink(secondEntry).map(out -> {
                         final MessageDigest digest = digest();
                         digest.reset();
@@ -122,16 +118,16 @@ abstract class ArchiveFilePatch {
                     });
                 }
 
-                private ArchiveEntry secondEntry(String name) { return secondOutput.entry(name); }
+                private ArchiveFileEntry<S> secondEntry(String name) { return secondOutput.entry(name); }
 
-                private Socket<OutputStream> secondSink(ArchiveEntry secondEntry) {
+                private Socket<OutputStream> secondSink(ArchiveFileEntry<S> secondEntry) {
                     return secondOutput.output(secondEntry);
                 }
             }
 
-            abstract class Patch {
+            abstract class Patch<E> {
 
-                abstract ArchiveFileInput input();
+                abstract ArchiveFileInput<E> input();
 
                 abstract IOException ioException(Throwable cause);
 
@@ -143,7 +139,7 @@ abstract class ArchiveFilePatch {
                         if (!filter.accept(name)) {
                             continue;
                         }
-                        final Optional<ArchiveEntry> entry = input().entry(name);
+                        final Optional<ArchiveFileEntry<E>> entry = input().entry(name);
                         try {
                             copy(
                                     entrySource(input(), entry.orElseThrow(() ->
@@ -157,19 +153,19 @@ abstract class ArchiveFilePatch {
                 }
             }
 
-            class FirstArchiveFilePatch extends Patch {
+            class FirstArchiveFilePatch extends Patch<F> {
 
                 @Override
-                ArchiveFileInput input() { return firstInput(); }
+                ArchiveFileInput<F> input() { return firstInput(); }
 
                 @Override
                 IOException ioException(Throwable cause) { return new WrongFirstArchiveFileException(cause); }
             }
 
-            class DeltaArchiveFilePatch extends Patch {
+            class DeltaArchiveFilePatch extends Patch<D> {
 
                 @Override
-                ArchiveFileInput input() { return deltaInput(); }
+                ArchiveFileInput<D> input() { return deltaInput(); }
 
                 @Override
                 IOException ioException(Throwable cause) { return new InvalidDeltaArchiveFileException(cause); }

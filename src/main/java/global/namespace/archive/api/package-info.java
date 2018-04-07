@@ -3,8 +3,8 @@
  * All rights reserved. Use is subject to license terms.
  */
 /**
- * A service provider interface which provides abstractions for accessing archive files.
+ * Provides abstractions for accessing archive files.
  *
  * @author Christian Schlichtherle
  */
-package global.namespace.archive.diff.spi;
+package global.namespace.archive.api;
