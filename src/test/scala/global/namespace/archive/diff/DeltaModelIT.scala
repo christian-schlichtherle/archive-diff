@@ -24,7 +24,7 @@ import scala.collection.JavaConverters._
 class DeltaModelIT extends WordSpec with ArchiveITContext {
 
   "A delta model" should {
-    "be round-trip XML serializable" in {
+    "support round-trip encoding and decoding" in {
       forAll(TestCases) { builder =>
         val original = builder.messageDigest(sha1).build
         val store = memoryStore

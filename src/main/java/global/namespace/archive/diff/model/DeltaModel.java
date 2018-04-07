@@ -28,9 +28,9 @@ import static java.util.Optional.of;
 @SuppressWarnings({"OptionalUsedAsFieldOrParameterType", "ConstantConditions"})
 public final class DeltaModel {
 
-    private final String algorithm;
+    private final String digestAlgorithmName;
 
-    private final Optional<Integer> numBytes;
+    private final Optional<Integer> digestByteLength;
 
     private final Map<String, EntryNameAndTwoDigestValues> changed;
 
@@ -38,8 +38,8 @@ public final class DeltaModel {
 
     private DeltaModel(final Builder b) {
         final MessageDigest digest = b.messageDigest.get();
-        this.algorithm = digest.getAlgorithm();
-        this.numBytes = lengthBytes(digest);
+        this.digestAlgorithmName = digest.getAlgorithm();
+        this.digestByteLength = lengthBytes(digest);
         this.changed = changedMap(b.changed);
         this.unchanged = unchangedMap(b.unchanged);
         this.added = unchangedMap(b.added);
@@ -82,68 +82,52 @@ public final class DeltaModel {
     private static int initialCapacity(Collection<?> c) { return HashMaps.initialCapacity(c.size()); }
 
     /** Returns the message digest algorithm name. */
-    public String digestAlgorithmName() { return algorithm; }
+    public String digestAlgorithmName() { return digestAlgorithmName; }
 
     /**
      * Returns the message digest byte length.
      * This is empty if and only if the byte length of the message digest used to build this delta model is the default
      * value for the algorithm.
      */
-    public Optional<Integer> digestByteLength() { return numBytes; }
+    public Optional<Integer> digestByteLength() { return digestByteLength; }
 
     /**
      * Returns a collection of the entry name and two message digests for the
      * <i>changed</i> entries.
      */
-    public Collection<EntryNameAndTwoDigestValues> changedEntries() {
-        return changed.values();
-    }
+    public Collection<EntryNameAndTwoDigestValues> changedEntries() { return changed.values(); }
 
     /** Looks up the given entry name in the <i>changed</i> entries. */
-    public EntryNameAndTwoDigestValues changed(String name) {
-        return changed.get(name);
-    }
+    public EntryNameAndTwoDigestValues changed(String name) { return changed.get(name); }
 
     /**
      * Returns a collection of the entry name and message digest for the
      * <i>unchanged</i> entries.
      */
-    public Collection<EntryNameAndDigestValue> unchangedEntries() {
-        return unchanged.values();
-    }
+    public Collection<EntryNameAndDigestValue> unchangedEntries() { return unchanged.values(); }
 
     /** Looks up the given entry name in the <i>unchanged</i> entries. */
     @Deprecated
-    public EntryNameAndDigestValue unchanged(String name) {
-        return unchanged.get(name);
-    }
+    public EntryNameAndDigestValue unchanged(String name) { return unchanged.get(name); }
 
     /**
      * Returns a collection of the entry name and message digest for the
      * <i>added</i> entries.
      */
-    public Collection<EntryNameAndDigestValue> addedEntries() {
-        return added.values();
-    }
+    public Collection<EntryNameAndDigestValue> addedEntries() { return added.values(); }
 
     /** Looks up the given entry name in the <i>added</i> entries. */
-    public EntryNameAndDigestValue added(String name) {
-        return added.get(name);
-    }
+    public EntryNameAndDigestValue added(String name) { return added.get(name); }
 
     /**
      * Returns a collection of the entry name and message digest for the
      * <i>removed</i> entries.
      */
-    public Collection<EntryNameAndDigestValue> removedEntries() {
-        return removed.values();
-    }
+    public Collection<EntryNameAndDigestValue> removedEntries() { return removed.values(); }
 
     /** Looks up the given entry name in the <i>removed</i> entries. */
     @Deprecated
-    public EntryNameAndDigestValue removed(String name) {
-        return removed.get(name);
-    }
+    public EntryNameAndDigestValue removed(String name) { return removed.get(name); }
 
     @SuppressWarnings("AccessingNonPublicFieldOfAnotherObject")
     @Override
@@ -155,8 +139,8 @@ public final class DeltaModel {
             return false;
         }
         final DeltaModel that = (DeltaModel) obj;
-        return  this.algorithm.equals(that.algorithm) &&
-                this.numBytes.equals(that.numBytes) &&
+        return  this.digestAlgorithmName.equals(that.digestAlgorithmName) &&
+                this.digestByteLength.equals(that.digestByteLength) &&
                 this.changed.equals(that.changed) &&
                 this.unchanged.equals(that.unchanged) &&
                 this.added.equals(that.added) &&
@@ -166,8 +150,8 @@ public final class DeltaModel {
     @Override
     public int hashCode() {
         int hash = 17;
-        hash = 31 * hash + algorithm.hashCode();
-        hash = 31 * hash + numBytes.hashCode();
+        hash = 31 * hash + digestAlgorithmName.hashCode();
+        hash = 31 * hash + digestByteLength.hashCode();
         hash = 31 * hash + changed.hashCode();
         hash = 31 * hash + unchanged.hashCode();
         hash = 31 * hash + added.hashCode();
