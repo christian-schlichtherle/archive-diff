@@ -5,9 +5,9 @@
 package global.namespace.archive.diff;
 
 import global.namespace.archive.api.*;
-import global.namespace.archive.diff.model.DeltaModel;
-import global.namespace.archive.diff.model.EntryNameAndDigestValue;
-import global.namespace.archive.diff.model.EntryNameAndTwoDigestValues;
+import global.namespace.archive.delta.model.DeltaModel;
+import global.namespace.archive.delta.model.EntryNameAndDigestValue;
+import global.namespace.archive.delta.model.EntryNameAndTwoDigestValues;
 import global.namespace.fun.io.api.Source;
 import global.namespace.fun.io.api.function.XFunction;
 
@@ -16,7 +16,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.TreeMap;
 
-import static global.namespace.archive.diff.Archive.encode;
+import static global.namespace.archive.diff.Archive.encodeModel;
 import static global.namespace.fun.io.bios.BIOS.copy;
 
 /**
@@ -64,7 +64,7 @@ abstract class ArchiveFileDiff<F, S, D> {
 
                 private final DeltaModel model = deltaModel();
 
-                private Streamer() throws Exception { encode(deltaOutput, model); }
+                private Streamer() throws Exception { encodeModel(deltaOutput, model); }
 
                 private void stream() throws Exception {
                     for (final ArchiveEntrySource<S> secondEntry : secondInput()) {

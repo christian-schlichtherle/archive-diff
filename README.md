@@ -37,7 +37,7 @@ Maybe you just want to explore the differences, but not generate a delta archive
 ```java
 import java.io.File;
 
-import global.namespace.archive.diff.model.*;
+import global.namespace.archive.delta.model.*;
 
 import static global.namespace.archive.diff.Archive.*;
 

@@ -5,7 +5,7 @@
 /**
  * Provides immutable model classes for use within delta archive files.
  *
- * @see global.namespace.archive.diff.model.DeltaModel
+ * @see global.namespace.archive.delta.model.DeltaModel
  * @author Christian Schlichtherle
  */
-package global.namespace.archive.diff.model;
+package global.namespace.archive.delta.model;

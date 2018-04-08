@@ -5,8 +5,8 @@
 package global.namespace.archive.diff;
 
 import global.namespace.archive.api.*;
-import global.namespace.archive.diff.model.DeltaModel;
-import global.namespace.archive.diff.model.EntryNameAndDigestValue;
+import global.namespace.archive.delta.model.DeltaModel;
+import global.namespace.archive.delta.model.EntryNameAndDigestValue;
 import global.namespace.fun.io.api.Sink;
 import global.namespace.fun.io.api.Socket;
 import global.namespace.fun.io.api.function.XConsumer;
@@ -174,7 +174,7 @@ abstract class ArchiveFilePatch<F, D, S> {
 
         DeltaModel model() throws Exception {
             final DeltaModel model = this.model;
-            return null != model ? model : (this.model = Archive.decode(deltaInput()));
+            return null != model ? model : (this.model = Archive.decodeModel(deltaInput()));
         }
     }
 }

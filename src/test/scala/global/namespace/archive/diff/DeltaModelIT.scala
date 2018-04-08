@@ -8,10 +8,10 @@ import java.nio.charset.Charset
 import java.security.MessageDigest
 import java.util.logging.{Level, Logger}
 
-import global.namespace.archive.diff.Archive.{decode, encode}
+import global.namespace.archive.delta.model.{DeltaModel, EntryNameAndDigestValue, EntryNameAndTwoDigestValues}
+import global.namespace.archive.diff.Archive.{decodeModel, encodeModel}
 import global.namespace.archive.diff.DeltaModelIT._
 import global.namespace.archive.diff.it.ArchiveITContext
-import global.namespace.archive.diff.model.{DeltaModel, EntryNameAndDigestValue, EntryNameAndTwoDigestValues}
 import global.namespace.fun.io.api.Store
 import global.namespace.fun.io.bios.BIOS.memoryStore
 import org.scalatest.Matchers.{theSameInstanceAs, _}
@@ -28,8 +28,8 @@ class DeltaModelIT extends WordSpec with ArchiveITContext {
       forAll(TestCases) { builder =>
         val original = builder.messageDigest(sha1).build
         val store = memoryStore
-        encode(store, original)
-        val clone = decode(store)
+        encodeModel(store, original)
+        val clone = decodeModel(store)
         logger.log(Level.FINE, "\n{0}", utf8String(store))
         clone shouldBe original
         clone should not be theSameInstanceAs(original)

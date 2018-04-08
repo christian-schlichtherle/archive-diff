@@ -2,7 +2,7 @@ package global.namespace.archive.diff;
 
 import global.namespace.archive.api.ArchiveFileSink;
 import global.namespace.archive.api.ArchiveFileSource;
-import global.namespace.archive.diff.model.DeltaModel;
+import global.namespace.archive.delta.model.DeltaModel;
 
 import java.security.MessageDigest;
 import java.util.Optional;

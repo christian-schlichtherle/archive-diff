@@ -4,8 +4,8 @@
  */
 package global.namespace.archive.diff;
 
-import global.namespace.archive.diff.model.EntryNameAndDigestValue;
-import global.namespace.archive.diff.model.EntryNameAndTwoDigestValues;
+import global.namespace.archive.delta.model.EntryNameAndDigestValue;
+import global.namespace.archive.delta.model.EntryNameAndTwoDigestValues;
 
 /**
  * Transforms an object into an

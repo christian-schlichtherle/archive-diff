@@ -2,14 +2,14 @@
  * Copyright (C) 2013-2018 Schlichtherle IT Services.
  * All rights reserved. Use is subject to license terms.
  */
-package global.namespace.archive.diff;
+package global.namespace.archive.delta;
 
-import global.namespace.archive.diff.dto.DeltaModelDTO;
-import global.namespace.archive.diff.dto.EntryNameAndDigestValueDTO;
-import global.namespace.archive.diff.dto.EntryNameAndTwoDigestValuesDTO;
-import global.namespace.archive.diff.model.DeltaModel;
-import global.namespace.archive.diff.model.EntryNameAndDigestValue;
-import global.namespace.archive.diff.model.EntryNameAndTwoDigestValues;
+import global.namespace.archive.delta.dto.DeltaDTO;
+import global.namespace.archive.delta.dto.EntryNameAndDigestValueDTO;
+import global.namespace.archive.delta.dto.EntryNameAndTwoDigestValuesDTO;
+import global.namespace.archive.delta.model.DeltaModel;
+import global.namespace.archive.delta.model.EntryNameAndDigestValue;
+import global.namespace.archive.delta.model.EntryNameAndTwoDigestValues;
 
 import java.security.MessageDigest;
 import java.util.Arrays;
@@ -20,15 +20,15 @@ import java.util.stream.Collectors;
 import static java.util.Collections.emptyList;
 
 /** @author Christian Schlichtherle */
-class DeltaModelDtoAdapter {
+public class DeltaModelDtoAdapter {
 
     private DeltaModelDtoAdapter() { }
 
-    static DeltaModelDTO marshal(final DeltaModel v) {
+    public static DeltaDTO marshal(final DeltaModel v) {
         if (null == v) {
             return null;
         } else {
-            final DeltaModelDTO dto = new DeltaModelDTO();
+            final DeltaDTO dto = new DeltaDTO();
             dto.algorithm = v.digestAlgorithmName();
             dto.numBytes = v.digestByteLength().orElse(0);
             dto.changed = marshal2(v.changedEntries());
@@ -39,7 +39,7 @@ class DeltaModelDtoAdapter {
         }
     }
 
-    static DeltaModel unmarshal(final DeltaModelDTO v) throws Exception {
+    public static DeltaModel unmarshal(final DeltaDTO v) throws Exception {
         if (null == v) {
             return null;
         } else {
