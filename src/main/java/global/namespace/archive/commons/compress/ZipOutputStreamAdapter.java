@@ -47,7 +47,8 @@ class ZipOutputStreamAdapter implements ArchiveFileOutput<ZipArchiveEntry> {
 
                 boolean closed;
 
-                @Override public void close() throws IOException {
+                @Override
+                public void close() throws IOException {
                     if (!closed) {
                         closed = true;
                         ((ZipArchiveOutputStream) out).closeArchiveEntry(); // not idempotent!

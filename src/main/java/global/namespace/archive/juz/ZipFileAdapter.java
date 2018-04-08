@@ -2,21 +2,21 @@
  * Copyright (C) 2013-2018 Schlichtherle IT Services.
  * All rights reserved. Use is subject to license terms.
  */
-package global.namespace.archive.commons.compress;
+package global.namespace.archive.juz;
 
 import global.namespace.archive.api.ArchiveFileEntry;
 import global.namespace.archive.api.ArchiveFileInput;
 import global.namespace.fun.io.api.Socket;
-import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
-import org.apache.commons.compress.archivers.zip.ZipFile;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.Optional;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 
-import static global.namespace.archive.commons.compress.CommonsCompress.archiveFileEntry;
+import static global.namespace.archive.juz.JUZ.archiveFileEntry;
 import static java.util.Objects.requireNonNull;
 
 /**
@@ -24,23 +24,23 @@ import static java.util.Objects.requireNonNull;
  *
  * @author Christian Schlichtherle
  */
-final class ZipFileAdapter implements ArchiveFileInput<ZipArchiveEntry> {
+final class ZipFileAdapter implements ArchiveFileInput<ZipEntry> {
 
     private final ZipFile zip;
 
     ZipFileAdapter(final ZipFile input) { this.zip = requireNonNull(input); }
 
     @Override
-    public Iterator<ArchiveFileEntry<ZipArchiveEntry>> iterator() {
-        return new Iterator<ArchiveFileEntry<ZipArchiveEntry>>() {
+    public Iterator<ArchiveFileEntry<ZipEntry>> iterator() {
+        return new Iterator<ArchiveFileEntry<ZipEntry>>() {
 
-            final Enumeration<ZipArchiveEntry> en = zip.getEntries();
+            final Enumeration<? extends ZipEntry> en = zip.entries();
 
             @Override
             public boolean hasNext() { return en.hasMoreElements(); }
 
             @Override
-            public ArchiveFileEntry<ZipArchiveEntry> next() { return archiveFileEntry(en.nextElement()); }
+            public ArchiveFileEntry<ZipEntry> next() { return archiveFileEntry(en.nextElement()); }
 
             @Override
             public void remove() { throw new UnsupportedOperationException(); }
@@ -48,12 +48,12 @@ final class ZipFileAdapter implements ArchiveFileInput<ZipArchiveEntry> {
     }
 
     @Override
-    public Optional<ArchiveFileEntry<ZipArchiveEntry>> entry(String name) {
-        return Optional.ofNullable(zip.getEntry(name)).map(CommonsCompress::archiveFileEntry);
+    public Optional<ArchiveFileEntry<ZipEntry>> entry(String name) {
+        return Optional.ofNullable(zip.getEntry(name)).map(JUZ::archiveFileEntry);
     }
 
     @Override
-    public Socket<InputStream> input(ArchiveFileEntry<ZipArchiveEntry> entry) {
+    public Socket<InputStream> input(ArchiveFileEntry<ZipEntry> entry) {
         return () -> zip.getInputStream(entry.entry());
     }
 

@@ -3,8 +3,8 @@
  * All rights reserved. Use is subject to license terms.
  */
 /**
- * Provides access to JAR and ZIP files using Apache Commons Compress.
+ * Provides access to JAR and ZIP files using the package {@code java.util.zip} (JUZ).
  *
  * @author Christian Schlichtherle
  */
-package global.namespace.archive.commons.compress;
+package global.namespace.archive.juz;
