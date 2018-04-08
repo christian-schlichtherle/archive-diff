@@ -2,9 +2,9 @@
  * Copyright (C) 2013-2018 Schlichtherle IT Services.
  * All rights reserved. Use is subject to license terms.
  */
-package global.namespace.archive.diff
+package global.namespace.archive.util
 
-import global.namespace.archive.diff.MessageDigests._
+import global.namespace.archive.util.MessageDigests._
 import global.namespace.fun.io.api.Source
 import org.scalatest.Matchers._
 import org.scalatest.WordSpec

@@ -18,6 +18,7 @@ import java.security.MessageDigest;
 import java.util.Optional;
 
 import static global.namespace.archive.diff.Archive.decodeModel;
+import static global.namespace.archive.util.MessageDigests.valueOf;
 import static global.namespace.fun.io.bios.BIOS.copy;
 
 /**
@@ -111,7 +112,7 @@ abstract class ArchiveFilePatch<F, D, S> {
                                 }
                             }
 
-                            String valueOfDigest() { return MessageDigests.valueOf(digest); }
+                            String valueOfDigest() { return valueOf(digest); }
                         };
                     });
                 }

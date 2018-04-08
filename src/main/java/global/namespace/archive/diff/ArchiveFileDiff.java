@@ -17,6 +17,8 @@ import java.util.Optional;
 import java.util.TreeMap;
 
 import static global.namespace.archive.diff.Archive.encodeModel;
+import static global.namespace.archive.util.MessageDigests.updateDigestFrom;
+import static global.namespace.archive.util.MessageDigests.valueOf;
 import static global.namespace.fun.io.bios.BIOS.copy;
 
 /**
@@ -188,8 +190,8 @@ abstract class ArchiveFileDiff<F, S, D> {
             String digestValueOf(final Source source) throws Exception {
                 final MessageDigest digest = digest();
                 digest.reset();
-                MessageDigests.updateDigestFrom(digest, source);
-                return MessageDigests.valueOf(digest);
+                updateDigestFrom(digest, source);
+                return valueOf(digest);
             }
         }
     }

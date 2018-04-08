@@ -2,7 +2,7 @@
  * Copyright (C) 2013-2018 Schlichtherle IT Services.
  * All rights reserved. Use is subject to license terms.
  */
-package global.namespace.archive.diff;
+package global.namespace.archive.util;
 
 import global.namespace.fun.io.api.Source;
 import global.namespace.fun.io.api.Store;
@@ -16,12 +16,12 @@ import java.security.NoSuchAlgorithmException;
  *
  * @author Christian Schlichtherle
  */
-class MessageDigests {
+public class MessageDigests {
 
     private MessageDigests() { }
 
     /** Returns a new SHA-1 message digest. */
-    static MessageDigest sha1() {
+    public static MessageDigest sha1() {
         try {
             return MessageDigest.getInstance("SHA-1");
         } catch (NoSuchAlgorithmException e) {
@@ -38,7 +38,7 @@ class MessageDigests {
      * @return a positive, big-endian integer in hexadecimal string notation representing the value of the message
      *         digest.
      */
-    static String valueOf(MessageDigest digest) {
+    public static String valueOf(MessageDigest digest) {
         return new BigInteger(1, digest.digest()).toString(16);
     }
 
@@ -48,7 +48,7 @@ class MessageDigests {
      * @param digest the message digest to to.
      * @param source the source for reading the binary data.
      */
-    static void updateDigestFrom(final MessageDigest digest, final Source source) throws Exception {
+    public static void updateDigestFrom(final MessageDigest digest, final Source source) throws Exception {
         source.acceptReader(in -> {
             final byte[] buffer = new byte[Store.BUFSIZE];
             for (int read; 0 <= (read = in.read(buffer)); ) {
