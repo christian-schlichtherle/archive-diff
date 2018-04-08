@@ -22,6 +22,7 @@ object Dependencies {
   val CommonsCompress: ModuleID = "org.apache.commons" % "commons-compress" % "1.16.1"
   val FunIoBios: ModuleID = "global.namespace.fun-io" % "fun-io-bios" % FunIoVersion
   val FunIoJackson: ModuleID = "global.namespace.fun-io" % "fun-io-jackson" % FunIoVersion
+  val Mockito: ModuleID = "org.mockito" % "mockito-core" % "2.18.0"
   val Scalacheck: ModuleID = "org.scalacheck" %% "scalacheck" % "1.13.5"
   val Scalatest: ModuleID = "org.scalatest" %% "scalatest" % "3.0.5"
 

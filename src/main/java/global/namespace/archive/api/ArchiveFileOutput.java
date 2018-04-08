@@ -25,10 +25,12 @@ public interface ArchiveFileOutput<E> extends Closeable {
     Socket<OutputStream> output(ArchiveFileEntry<E> entry);
 
     /** Returns a sink for writing the content of the given archive entry. */
-    default ArchiveEntrySink sink(ArchiveFileEntry<E> entry) {
-        return new ArchiveEntrySink() {
+    default ArchiveEntrySink<E> sink(ArchiveFileEntry<E> entry) {
+        return new ArchiveEntrySink<E>() {
 
             public String name() { return entry.name(); }
+
+            public E entry() { return entry.entry(); }
 
             public Socket<OutputStream> output() { return ArchiveFileOutput.this.output(entry); }
         };

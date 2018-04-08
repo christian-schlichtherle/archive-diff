@@ -8,17 +8,13 @@ import global.namespace.archive.api.*;
 import global.namespace.archive.diff.model.DeltaModel;
 import global.namespace.archive.diff.model.EntryNameAndDigestValue;
 import global.namespace.archive.diff.model.EntryNameAndTwoDigestValues;
-import global.namespace.fun.io.api.Sink;
 import global.namespace.fun.io.api.Source;
 import global.namespace.fun.io.api.function.XFunction;
-import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
-import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream;
 
 import java.security.MessageDigest;
 import java.util.Map;
 import java.util.Optional;
 import java.util.TreeMap;
-import java.util.regex.Pattern;
 
 import static global.namespace.archive.diff.Archive.encode;
 import static global.namespace.fun.io.bios.BIOS.copy;
@@ -29,9 +25,6 @@ import static global.namespace.fun.io.bios.BIOS.copy;
  * @author Christian Schlichtherle
  */
 abstract class ArchiveFileDiff<F, S, D> {
-
-    private static final Pattern COMPRESSED_FILE_EXTENSIONS =
-            Pattern.compile(".*\\.(ear|jar|war|zip|gz|xz)", Pattern.CASE_INSENSITIVE);
 
     abstract MessageDigest digest();
 
@@ -77,28 +70,19 @@ abstract class ArchiveFileDiff<F, S, D> {
                     for (final ArchiveFileEntry<S> secondEntry : secondInput()) {
                         final String name = secondEntry.name();
                         if (changedOrAdded(name)) {
-                            final ArchiveFileEntry<D> deltaEntry = deltaEntry(name);
-                            if (secondEntry.entry() instanceof ZipArchiveEntry && deltaEntry.entry() instanceof ZipArchiveEntry &&
-                                    COMPRESSED_FILE_EXTENSIONS.matcher(name).matches()) {
-                                final ZipArchiveEntry secondZipEntry = (ZipArchiveEntry) secondEntry.entry();
-                                final ZipArchiveEntry deltaZipEntry = (ZipArchiveEntry) deltaEntry.entry();
-                                final long size = secondZipEntry.getSize();
-
-                                deltaZipEntry.setMethod(ZipArchiveOutputStream.STORED);
-                                deltaZipEntry.setSize(size);
-                                deltaZipEntry.setCompressedSize(size);
-                                deltaZipEntry.setCrc(secondZipEntry.getCrc());
-                            }
-                            copy(secondSource(secondEntry), deltaSink(deltaEntry));
+                            final ArchiveFileChannel channel = secondSource(secondEntry).connect(deltaSink(deltaEntry(name)));
+                            copy(channel.source(), channel.sink());
                         }
                     }
                 }
 
-                private Source secondSource(ArchiveFileEntry<S> secondEntry) {
+                private ArchiveEntrySource<S> secondSource(ArchiveFileEntry<S> secondEntry) {
                     return secondInput().source(secondEntry);
                 }
 
-                private Sink deltaSink(ArchiveFileEntry<D> deltaEntry) { return deltaOutput.sink(deltaEntry); }
+                private ArchiveEntrySink<D> deltaSink(ArchiveFileEntry<D> deltaEntry) {
+                    return deltaOutput.sink(deltaEntry);
+                }
 
                 private ArchiveFileEntry<D> deltaEntry(String name) { return deltaOutput.entry(name); }
 

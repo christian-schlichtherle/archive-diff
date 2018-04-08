@@ -43,6 +43,7 @@ public class ArchiveFileDiffBuilder {
     }
 
     /** Writes the delta archive file computed from the first and second archive file to the given sink. */
+    @SuppressWarnings("unchecked")
     public void to(ArchiveFileSink<?> delta) throws Exception { build().to(delta); }
 
     /** Returns the delta model computed from the first and second archive file. */

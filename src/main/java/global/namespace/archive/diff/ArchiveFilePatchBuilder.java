@@ -32,6 +32,7 @@ public class ArchiveFilePatchBuilder {
     }
 
     /** Writes the second archive file computed from the first and delta archive file to the given sink. */
+    @SuppressWarnings("unchecked")
     public void to(ArchiveFileSink<?> second) throws Exception { build().to(second); }
 
     private ArchiveFilePatch build() { return create(first.get(), delta.get()); }

@@ -25,6 +25,7 @@ lazy val root: Project = project
       CommonsCompress,
       FunIoBios,
       FunIoJackson,
+      Mockito % Test,
       Scalacheck % Test,
       Scalatest % Test
     ),

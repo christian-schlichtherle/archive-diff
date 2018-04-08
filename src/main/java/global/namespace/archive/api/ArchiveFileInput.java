@@ -5,6 +5,7 @@
 package global.namespace.archive.api;
 
 import global.namespace.fun.io.api.Socket;
+import global.namespace.fun.io.api.Source;
 
 import java.io.Closeable;
 import java.io.InputStream;
@@ -25,10 +26,12 @@ public interface ArchiveFileInput<E> extends Iterable<ArchiveFileEntry<E>>, Clos
     Socket<InputStream> input(ArchiveFileEntry<E> entry);
 
     /** Returns a source for reading the content of the given archive entry. */
-    default ArchiveEntrySource source(ArchiveFileEntry<E> entry) {
-        return new ArchiveEntrySource() {
+    default ArchiveEntrySource<E> source(ArchiveFileEntry<E> entry) {
+        return new ArchiveEntrySource<E>() {
 
             public String name() { return entry.name(); }
+
+            public E entry() { return entry.entry(); }
 
             public Socket<InputStream> input() { return ArchiveFileInput.this.input(entry); }
         };
