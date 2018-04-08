@@ -24,8 +24,8 @@ class ArchiveFileDiffAndPatchSpec extends WordSpec {
 
   "An archive file diff" should {
     "correctly partition the entry names and digests" in {
-      forAllArchives { (a, b) => { implicit store =>
-        val model = (diff first a second b digest md5).deltaModel
+      forAllArchives { (a, b) => { _ =>
+        val model = (diff first a second b digest sha1).deltaModel
         import model._
         changedEntries.asScala map (_.entryName) shouldBe List("differentEntrySize")
         addedEntries.asScala map (_.entryName) shouldBe List("entryOnlyInFile2")
@@ -41,14 +41,14 @@ class ArchiveFileDiffAndPatchSpec extends WordSpec {
         withTempArchiveStore { c =>
           withTempArchiveStore { b2 =>
 
-            diff first a second b digest sha1 to c
+            diff first a second b digest md5 to c
             patch first a delta c to b2
 
             val unchangedReference: List[String] = {
               b applyReader (_.asScala.filter(!_.isDirectory).map(_.name).toList)
             }
 
-            val model = (diff first b second b2 digest md5).deltaModel
+            val model = (diff first b second b2 digest sha1).deltaModel
             model.changedEntries shouldBe empty
             model.addedEntries shouldBe empty
             model.removedEntries shouldBe empty
@@ -63,11 +63,7 @@ class ArchiveFileDiffAndPatchSpec extends WordSpec {
 private object ArchiveFileDiffAndPatchSpec {
 
   def forAllArchives(test: (ArchiveFileSource[_], ArchiveFileSource[_]) => (File => ArchiveFileStore[_]) => Any): Unit = {
-    forAll(Tests) { store =>
-      val test1JarSource: ArchiveFileSource[_] = store(Test1JarFile)
-      val test2JarSource: ArchiveFileSource[_] = store(Test2JarFile)
-      test(test1JarSource, test2JarSource)(store)
-    }
+    forAll(Tests)(store => test(store(Test1JarFile), store(Test2JarFile))(store))
   }
 
   val Tests: TableFor1[File => ArchiveFileStore[_]] = Table(
