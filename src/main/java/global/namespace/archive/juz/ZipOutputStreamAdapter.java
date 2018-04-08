@@ -58,7 +58,7 @@ class ZipOutputStreamAdapter implements ArchiveFileOutput<ZipEntry> {
     }
 
     @Override
-    public ArchiveEntrySink<ZipEntry> sink(ArchiveFileEntry<ZipEntry> entry) {
+    public ArchiveEntrySink<ZipEntry> sink(final ArchiveFileEntry<ZipEntry> entry) {
         return new ArchiveEntrySink<ZipEntry>() {
 
             final ZipEntry zipEntry = entry.entry();
