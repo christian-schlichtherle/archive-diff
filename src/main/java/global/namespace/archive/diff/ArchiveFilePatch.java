@@ -18,7 +18,6 @@ import java.security.DigestOutputStream;
 import java.security.MessageDigest;
 import java.util.Optional;
 
-import static global.namespace.archive.diff.Archive.entrySource;
 import static global.namespace.fun.io.bios.BIOS.copy;
 
 /**
@@ -100,7 +99,7 @@ abstract class ArchiveFilePatch<F, D, S> {
                 @Override
                 public Socket<OutputStream> output() {
                     final ArchiveFileEntry<S> secondEntry = secondEntry(entryNameAndDigest.entryName());
-                    return secondSink(secondEntry).map(out -> {
+                    return secondSocket(secondEntry).map(out -> {
                         final MessageDigest digest = digest();
                         digest.reset();
                         return new DigestOutputStream(out, digest) {
@@ -120,7 +119,7 @@ abstract class ArchiveFilePatch<F, D, S> {
 
                 private ArchiveFileEntry<S> secondEntry(String name) { return secondOutput.entry(name); }
 
-                private Socket<OutputStream> secondSink(ArchiveFileEntry<S> secondEntry) {
+                private Socket<OutputStream> secondSocket(ArchiveFileEntry<S> secondEntry) {
                     return secondOutput.output(secondEntry);
                 }
             }
@@ -142,7 +141,7 @@ abstract class ArchiveFilePatch<F, D, S> {
                         final Optional<ArchiveFileEntry<E>> entry = input().entry(name);
                         try {
                             copy(
-                                    entrySource(input(), entry.orElseThrow(() ->
+                                    input().source(entry.orElseThrow(() ->
                                             ioException(new MissingArchiveEntryException(name)))),
                                     new MyArchiveEntrySink(entryNameAndDigestValue)
                             );

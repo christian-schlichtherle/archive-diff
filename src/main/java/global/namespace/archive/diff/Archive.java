@@ -6,20 +6,14 @@ package global.namespace.archive.diff;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import global.namespace.archive.api.ArchiveFileEntry;
 import global.namespace.archive.api.ArchiveFileInput;
 import global.namespace.archive.api.ArchiveFileOutput;
 import global.namespace.archive.diff.dto.DeltaModelDTO;
 import global.namespace.archive.diff.model.DeltaModel;
 import global.namespace.fun.io.api.Codec;
 import global.namespace.fun.io.api.Sink;
-import global.namespace.fun.io.api.Socket;
 import global.namespace.fun.io.api.Source;
 import global.namespace.fun.io.jackson.Jackson;
-import org.apache.commons.compress.archivers.ArchiveEntry;
-
-import java.io.InputStream;
-import java.io.OutputStream;
 
 /**
  * Diffs and patches archive files.
@@ -44,26 +38,8 @@ public class Archive {
     /** Returns a builder for patching the first archive file to a second archive file using a delta archive file. */
     public static ArchiveFilePatchBuilder patch() { return new ArchiveFilePatchBuilder(); }
 
-    static <E> ArchiveEntrySink entrySink(ArchiveFileOutput<E> output, ArchiveFileEntry<E> entry) {
-        return new ArchiveEntrySink() {
-
-            public String name() { return entry.name(); }
-
-            public Socket<OutputStream> output() { return output.output(entry); }
-        };
-    }
-
-    static <E> ArchiveEntrySource entrySource(ArchiveFileInput<E> input, ArchiveFileEntry<E> entry) {
-        return new ArchiveEntrySource() {
-
-            public String name() { return entry.name(); }
-
-            public Socket<InputStream> input() { return input.input(entry); }
-        };
-    }
-
     static <E> void encode(ArchiveFileOutput<E> output, DeltaModel model) throws Exception {
-        encode(entrySink(output, output.entry(ENTRY_NAME)), model);
+        encode(output.sink(output.entry(ENTRY_NAME)), model);
     }
 
     static void encode(Sink sink, DeltaModel model) throws Exception {
@@ -75,7 +51,7 @@ public class Archive {
     }
 
     static <E> DeltaModel decode(ArchiveFileInput<E> input) throws Exception {
-        return decode(entrySource(input, input.entry(ENTRY_NAME).orElseThrow(() ->
+        return decode(input.source(input.entry(ENTRY_NAME).orElseThrow(() ->
                 new InvalidDeltaArchiveFileException(new MissingArchiveEntryException(ENTRY_NAME)))));
     }
 

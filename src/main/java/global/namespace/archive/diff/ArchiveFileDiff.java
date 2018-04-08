@@ -20,7 +20,7 @@ import java.util.Optional;
 import java.util.TreeMap;
 import java.util.regex.Pattern;
 
-import static global.namespace.archive.diff.Archive.*;
+import static global.namespace.archive.diff.Archive.encode;
 import static global.namespace.fun.io.bios.BIOS.copy;
 
 /**
@@ -95,10 +95,10 @@ abstract class ArchiveFileDiff<F, S, D> {
                 }
 
                 private Source secondSource(ArchiveFileEntry<S> secondEntry) {
-                    return entrySource(secondInput(), secondEntry);
+                    return secondInput().source(secondEntry);
                 }
 
-                private Sink deltaSink(ArchiveFileEntry<D> deltaEntry) { return entrySink(deltaOutput, deltaEntry); }
+                private Sink deltaSink(ArchiveFileEntry<D> deltaEntry) { return deltaOutput.sink(deltaEntry); }
 
                 private ArchiveFileEntry<D> deltaEntry(String name) { return deltaOutput.entry(name); }
 
@@ -125,9 +125,9 @@ abstract class ArchiveFileDiff<F, S, D> {
                         continue;
                     }
                     final Optional<ArchiveFileEntry<S>> secondEntry = secondInput().entry(firstEntry.name());
-                    final ArchiveEntrySource firstSource = entrySource(firstInput(), firstEntry);
+                    final ArchiveEntrySource firstSource = firstInput().source(firstEntry);
                     if (secondEntry.isPresent()) {
-                        final ArchiveEntrySource secondSource = entrySource(secondInput(), secondEntry.get());
+                        final ArchiveEntrySource secondSource = secondInput().source(secondEntry.get());
                         assembly.visitEntriesInBothFiles(firstSource, secondSource);
                     } else {
                         assembly.visitEntryInFirstFile(firstSource);
@@ -140,7 +140,7 @@ abstract class ArchiveFileDiff<F, S, D> {
                     }
                     final Optional<ArchiveFileEntry<F>> firstEntry = firstInput().entry(secondEntry.name());
                     if (!firstEntry.isPresent()) {
-                        final ArchiveEntrySource secondSource = entrySource(secondInput(), secondEntry);
+                        final ArchiveEntrySource secondSource = secondInput().source(secondEntry);
                         assembly.visitEntryInSecondFile(secondSource);
                     }
                 }
