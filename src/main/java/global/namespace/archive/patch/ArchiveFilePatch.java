@@ -2,7 +2,7 @@
  * Copyright (C) 2013-2018 Schlichtherle IT Services.
  * All rights reserved. Use is subject to license terms.
  */
-package global.namespace.archive.diff;
+package global.namespace.archive.patch;
 
 import global.namespace.archive.api.*;
 import global.namespace.archive.delta.model.DeltaModel;
@@ -22,7 +22,6 @@ import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-import static global.namespace.archive.diff.Archive.decodeModel;
 import static global.namespace.archive.util.MessageDigests.valueOf;
 import static global.namespace.fun.io.bios.BIOS.copy;
 import static java.util.Arrays.asList;
@@ -181,7 +180,7 @@ abstract class ArchiveFilePatch<F, D, S> {
 
         DeltaModel model() throws Exception {
             final DeltaModel model = this.model;
-            return null != model ? model : (this.model = decodeModel(deltaInput()));
+            return null != model ? model : (this.model = Patch.decodeModel(deltaInput()));
         }
     }
 }

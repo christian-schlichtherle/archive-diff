@@ -9,9 +9,10 @@ import java.security.MessageDigest
 
 import global.namespace.archive.api.{ArchiveFileSource, ArchiveFileStore}
 import global.namespace.archive.commons.compress.Compress
-import global.namespace.archive.diff.Archive._
+import global.namespace.archive.diff.Diff._
 import global.namespace.archive.it.ArchiveFileDiffAndPatchSpec._
 import global.namespace.archive.juz.JUZ
+import global.namespace.archive.patch.Patch._
 import org.scalatest.Matchers._
 import org.scalatest.WordSpec
 import org.scalatest.prop.PropertyChecks._

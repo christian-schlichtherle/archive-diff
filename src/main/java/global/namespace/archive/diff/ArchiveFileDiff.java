@@ -16,7 +16,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.TreeMap;
 
-import static global.namespace.archive.diff.Archive.encodeModel;
 import static global.namespace.archive.util.MessageDigests.updateDigestFrom;
 import static global.namespace.archive.util.MessageDigests.valueOf;
 import static global.namespace.fun.io.bios.BIOS.copy;
@@ -66,7 +65,7 @@ abstract class ArchiveFileDiff<F, S, D> {
 
                 private final DeltaModel model = deltaModel();
 
-                private Streamer() throws Exception { encodeModel(deltaOutput, model); }
+                private Streamer() throws Exception { Diff.encodeModel(deltaOutput, model); }
 
                 private void stream() throws Exception {
                     for (final ArchiveEntrySource<S> secondEntry : secondInput()) {

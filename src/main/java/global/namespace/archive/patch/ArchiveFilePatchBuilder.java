@@ -1,4 +1,4 @@
-package global.namespace.archive.diff;
+package global.namespace.archive.patch;
 
 import global.namespace.archive.api.ArchiveFileSink;
 import global.namespace.archive.api.ArchiveFileSource;

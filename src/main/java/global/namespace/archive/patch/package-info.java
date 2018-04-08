@@ -3,9 +3,9 @@
  * All rights reserved. Use is subject to license terms.
  */
 /**
- * Diffs archive files.
+ * Patches archive files.
  *
- * @see global.namespace.archive.diff.Diff
+ * @see global.namespace.archive.patch.Patch
  * @author Christian Schlichtherle
  */
-package global.namespace.archive.diff;
+package global.namespace.archive.patch;
