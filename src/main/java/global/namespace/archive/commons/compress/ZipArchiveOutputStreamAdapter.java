@@ -32,6 +32,9 @@ class ZipArchiveOutputStreamAdapter implements ArchiveFileOutput<ZipArchiveEntry
 
     ZipArchiveOutputStreamAdapter(final ZipArchiveOutputStream zip) { this.zip = requireNonNull(zip); }
 
+    /** Returns {@code false}. */
+    public boolean isJar() { return false; }
+
     public ArchiveEntrySink<ZipArchiveEntry> sink(String name) { return sink(new ZipArchiveEntry(name)); }
 
     ArchiveEntrySink<ZipArchiveEntry> sink(ZipArchiveEntry entry) {

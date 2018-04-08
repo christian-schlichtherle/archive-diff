@@ -10,7 +10,6 @@ import global.namespace.archive.diff.model.EntryNameAndDigestValue;
 import global.namespace.fun.io.api.Sink;
 import global.namespace.fun.io.api.Socket;
 import global.namespace.fun.io.api.function.XConsumer;
-import org.apache.commons.compress.archivers.jar.JarArchiveEntry;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -67,7 +66,7 @@ abstract class ArchiveFilePatch<F, D, S> {
          * exactly one filter.
          */
         EntryNameFilter[] passFilters(final ArchiveFileOutput<S> secondOutput) {
-            if (secondOutput.sink("").entry() instanceof JarArchiveEntry) {
+            if (secondOutput.isJar()) {
                 // java.util.JarInputStream assumes that the file entry
                 // "META-INF/MANIFEST.MF" should either be the first or the second
                 // entry (if preceded by the directory entry "META-INF/"), so we

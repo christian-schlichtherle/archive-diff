@@ -14,6 +14,9 @@ import java.io.Closeable;
  */
 public interface ArchiveFileOutput<E> extends Closeable {
 
+    /** Returns {@code true} if and only if this is a JAR file. */
+    boolean isJar();
+
     /** Returns a sink for writing the archive entry with the given name. */
     ArchiveEntrySink<E> sink(String name);
 }

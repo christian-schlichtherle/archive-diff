@@ -20,6 +20,10 @@ final class JarOutputStreamAdapter extends ZipOutputStreamAdapter {
 
     JarOutputStreamAdapter(JarOutputStream jar) { super(jar); }
 
+    /** Returns {@code true}. */
+    @Override
+    public boolean isJar() { return true; }
+
     @Override
     public ArchiveEntrySink<ZipEntry> sink(String name) { return sink(new JarEntry(name)); }
 }
