@@ -9,7 +9,7 @@ Diffs and patches archive files like EAR, JAR, WAR, ZIP et al.
 ```java
 import java.io.File;
 
-import static global.namespace.archive.diff.Diff.*;
+import static global.namespace.archive.io.delta.Diff.*;
 
 File first = ...;
 File second = ...;
@@ -22,7 +22,7 @@ diff().first(jar(first)).second(jar(second)).to(jar(delta));
 ```java
 import java.io.File;
 
-import static global.namespace.archive.patch.Patch.*;
+import static global.namespace.archive.io.delta.Patch.*;
 
 File first = ...;
 File second = ...;
@@ -37,9 +37,9 @@ Maybe you just want to explore the differences, but not generate a delta archive
 ```java
 import java.io.File;
 
-import global.namespace.archive.delta.model.*;
+import global.namespace.archive.io.delta.model.*;
 
-import static global.namespace.archive.diff.Diff.*;
+import static global.namespace.archive.io.delta.Diff.*;
 
 File first = ...;
 File second = ...;
