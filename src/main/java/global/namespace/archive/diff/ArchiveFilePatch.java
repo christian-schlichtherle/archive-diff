@@ -17,6 +17,7 @@ import java.security.DigestOutputStream;
 import java.security.MessageDigest;
 import java.util.Optional;
 
+import static global.namespace.archive.diff.Archive.decodeModel;
 import static global.namespace.fun.io.bios.BIOS.copy;
 
 /**
@@ -168,13 +169,11 @@ abstract class ArchiveFilePatch<F, D, S> {
             new DeltaArchiveFilePatch().apply(new IdentityTransformation(), model().addedEntries());
         }
 
-        MessageDigest digest() throws Exception {
-            return MessageDigest.getInstance(model().digestAlgorithmName());
-        }
+        MessageDigest digest() throws Exception { return MessageDigest.getInstance(model().digestAlgorithmName()); }
 
         DeltaModel model() throws Exception {
             final DeltaModel model = this.model;
-            return null != model ? model : (this.model = Archive.decodeModel(deltaInput()));
+            return null != model ? model : (this.model = decodeModel(deltaInput()));
         }
     }
 }

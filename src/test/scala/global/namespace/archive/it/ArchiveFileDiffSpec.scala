@@ -2,7 +2,7 @@
  * Copyright (C) 2013-2018 Schlichtherle IT Services.
  * All rights reserved. Use is subject to license terms.
  */
-package global.namespace.archive.diff.it
+package global.namespace.archive.it
 
 import global.namespace.archive.diff.Archive.diff
 import org.scalatest.Matchers._
@@ -11,7 +11,7 @@ import org.scalatest.WordSpec
 import scala.collection.JavaConverters._
 
 /** @author Christian Schlichtherle */
-class ArchiveFileDiffIT extends WordSpec with ArchiveITContext {
+class ArchiveFileDiffSpec extends WordSpec with ArchiveSpecContext {
 
   "An archive file diff" when {
     "processing the test JAR files" should {

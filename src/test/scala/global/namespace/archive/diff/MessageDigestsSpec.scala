@@ -25,7 +25,7 @@ class MessageDigestsSpec extends WordSpec {
         val digest = sha1
         val source: Source = () => () => classOf[MessageDigestsSpec].getResourceAsStream(resourceName)
         updateDigestFrom(digest, source)
-        valueOf(digest) should equal (referenceValue)
+        valueOf(digest) shouldBe referenceValue
       }
     }
   }

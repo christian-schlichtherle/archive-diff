@@ -2,20 +2,20 @@
  * Copyright (C) 2013-2018 Schlichtherle IT Services.
  * All rights reserved. Use is subject to license terms.
  */
-package global.namespace.archive.diff.it
+package global.namespace.archive.it
 
 import java.io._
 import java.security.MessageDigest
 
-import global.namespace.archive.diff.Archive._
 import global.namespace.archive.commons.compress.CommonsCompress._
+import global.namespace.archive.diff.Archive._
 import org.scalatest.Matchers._
 import org.scalatest.WordSpec
 
 import scala.collection.JavaConverters._
 
 /** @author Christian Schlichtherle */
-class ArchiveFilePatchIT extends WordSpec with ArchiveITContext {
+class ArchiveFilePatchSpec extends WordSpec with ArchiveSpecContext {
 
   "An archive file diff and patch" when {
     "computing a delta-archive file first a first-archive file and a to-archive file and computing another to-archive file first the same first-archive file and the previously computed delta-archive file" should {

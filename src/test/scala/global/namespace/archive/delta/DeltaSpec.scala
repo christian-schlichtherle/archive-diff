@@ -2,16 +2,15 @@
  * Copyright (C) 2013-2018 Schlichtherle IT Services.
  * All rights reserved. Use is subject to license terms.
  */
-package global.namespace.archive.diff
+package global.namespace.archive.delta
 
 import java.nio.charset.Charset
 import java.security.MessageDigest
 import java.util.logging.{Level, Logger}
 
+import global.namespace.archive.delta.Delta._
+import global.namespace.archive.delta.DeltaSpec._
 import global.namespace.archive.delta.model.{DeltaModel, EntryNameAndDigestValue, EntryNameAndTwoDigestValues}
-import global.namespace.archive.diff.Archive.{decodeModel, encodeModel}
-import global.namespace.archive.diff.DeltaModelIT._
-import global.namespace.archive.diff.it.ArchiveITContext
 import global.namespace.fun.io.api.Store
 import global.namespace.fun.io.bios.BIOS.memoryStore
 import org.scalatest.Matchers.{theSameInstanceAs, _}
@@ -21,10 +20,10 @@ import org.scalatest.prop.PropertyChecks._
 import scala.collection.JavaConverters._
 
 /** @author Christian Schlichtherle */
-class DeltaModelIT extends WordSpec with ArchiveITContext {
+class DeltaSpec extends WordSpec {
 
   "A delta model" should {
-    "support round-trip encoding and decoding" in {
+    "support round-trip encoding/decoding to/from a sink/source" in {
       forAll(TestCases) { builder =>
         val original = builder.messageDigest(sha1).build
         val store = memoryStore
@@ -38,7 +37,7 @@ class DeltaModelIT extends WordSpec with ArchiveITContext {
   }
 }
 
-private object DeltaModelIT {
+private object DeltaSpec {
 
   import DeltaModel.{builder => b}
   val TestCases = Table(

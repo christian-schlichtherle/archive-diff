@@ -4,12 +4,18 @@
  */
 package global.namespace.archive.delta;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import global.namespace.archive.delta.dto.DeltaDTO;
 import global.namespace.archive.delta.dto.EntryNameAndDigestValueDTO;
 import global.namespace.archive.delta.dto.EntryNameAndTwoDigestValuesDTO;
 import global.namespace.archive.delta.model.DeltaModel;
 import global.namespace.archive.delta.model.EntryNameAndDigestValue;
 import global.namespace.archive.delta.model.EntryNameAndTwoDigestValues;
+import global.namespace.fun.io.api.Codec;
+import global.namespace.fun.io.api.Sink;
+import global.namespace.fun.io.api.Source;
+import global.namespace.fun.io.jackson.Jackson;
 
 import java.security.MessageDigest;
 import java.util.Arrays;
@@ -19,12 +25,34 @@ import java.util.stream.Collectors;
 
 import static java.util.Collections.emptyList;
 
-/** @author Christian Schlichtherle */
-public class DeltaModelDtoAdapter {
+/**
+ * Encodes/Decodes delta models to/from sinks/sources.
+ *
+ * @author Christian Schlichtherle
+ */
+public class Delta {
 
-    private DeltaModelDtoAdapter() { }
+    private Delta() { }
 
-    public static DeltaDTO marshal(final DeltaModel v) {
+    /** Encodes the given delta model to the given sink. */
+    public static void encodeModel(Sink sink, DeltaModel model) throws Exception { encodeDTO(sink, marshal(model)); }
+
+    /** Decodes a delta model from the given source. */
+    public static DeltaModel decodeModel(Source source) throws Exception { return unmarshal(decodeDTO(source)); }
+
+    private static void encodeDTO(Sink sink, DeltaDTO dto) throws Exception { jsonCodec().encoder(sink).encode(dto); }
+
+    private static DeltaDTO decodeDTO(Source source) throws Exception {
+        return jsonCodec().decoder(source).decode(DeltaDTO.class);
+    }
+
+    private static Codec jsonCodec() {
+        final ObjectMapper mapper = new ObjectMapper();
+        mapper.setSerializationInclusion(JsonInclude.Include.NON_DEFAULT);
+        return Jackson.jsonCodec(mapper);
+    }
+
+    private static DeltaDTO marshal(final DeltaModel v) {
         if (null == v) {
             return null;
         } else {
@@ -39,7 +67,7 @@ public class DeltaModelDtoAdapter {
         }
     }
 
-    public static DeltaModel unmarshal(final DeltaDTO v) throws Exception {
+    private static DeltaModel unmarshal(final DeltaDTO v) throws Exception {
         if (null == v) {
             return null;
         } else {
