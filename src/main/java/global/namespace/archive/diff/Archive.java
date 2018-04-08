@@ -39,7 +39,7 @@ public class Archive {
     public static ArchiveFilePatchBuilder patch() { return new ArchiveFilePatchBuilder(); }
 
     static <E> void encode(ArchiveFileOutput<E> output, DeltaModel model) throws Exception {
-        encode(output.sink(output.entry(ENTRY_NAME)), model);
+        encode(output.sink(ENTRY_NAME), model);
     }
 
     static void encode(Sink sink, DeltaModel model) throws Exception {
@@ -51,8 +51,8 @@ public class Archive {
     }
 
     static <E> DeltaModel decode(ArchiveFileInput<E> input) throws Exception {
-        return decode(input.source(input.entry(ENTRY_NAME).orElseThrow(() ->
-                new InvalidDeltaArchiveFileException(new MissingArchiveEntryException(ENTRY_NAME)))));
+        return decode(input.source(ENTRY_NAME).orElseThrow(() ->
+                new InvalidDeltaArchiveFileException(new MissingArchiveEntryException(ENTRY_NAME))));
     }
 
     static DeltaModel decode(Source source) throws Exception {

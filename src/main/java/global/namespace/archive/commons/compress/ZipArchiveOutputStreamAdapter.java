@@ -2,54 +2,54 @@
  * Copyright (C) 2013-2018 Schlichtherle IT Services.
  * All rights reserved. Use is subject to license terms.
  */
-package global.namespace.archive.juz;
+package global.namespace.archive.commons.compress;
 
 import global.namespace.archive.api.ArchiveEntrySink;
 import global.namespace.archive.api.ArchiveEntrySource;
 import global.namespace.archive.api.ArchiveFileOutput;
 import global.namespace.fun.io.api.Socket;
+import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
+import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream;
 
 import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.regex.Pattern;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
 
 import static java.util.Objects.requireNonNull;
 
 /**
- * Adapts a {@link ZipOutputStream} to an {@link ArchiveFileOutput}.
+ * Adapts a {@link ZipArchiveOutputStream} to an {@link ArchiveFileOutput}.
  *
  * @author Christian Schlichtherle
  */
-class ZipOutputStreamAdapter implements ArchiveFileOutput<ZipEntry> {
+class ZipArchiveOutputStreamAdapter implements ArchiveFileOutput<ZipArchiveEntry> {
 
     private static final Pattern COMPRESSED_FILE_EXTENSIONS =
             Pattern.compile(".*\\.(ear|jar|war|zip|gz|xz)", Pattern.CASE_INSENSITIVE);
 
-    private final ZipOutputStream zip;
+    private final ZipArchiveOutputStream zip;
 
-    ZipOutputStreamAdapter(final ZipOutputStream zip) { this.zip = requireNonNull(zip); }
+    ZipArchiveOutputStreamAdapter(final ZipArchiveOutputStream zip) { this.zip = requireNonNull(zip); }
 
-    public ArchiveEntrySink<ZipEntry> sink(String name) { return sink(new ZipEntry(name)); }
+    public ArchiveEntrySink<ZipArchiveEntry> sink(String name) { return sink(new ZipArchiveEntry(name)); }
 
-    ArchiveEntrySink<ZipEntry> sink(ZipEntry entry) {
-        return new ArchiveEntrySink<ZipEntry>() {
+    ArchiveEntrySink<ZipArchiveEntry> sink(ZipArchiveEntry entry) {
+        return new ArchiveEntrySink<ZipArchiveEntry>() {
 
             public String name() { return entry.getName(); }
 
             public boolean isDirectory() { return entry.isDirectory(); }
 
-            public ZipEntry entry() { return entry; }
+            public ZipArchiveEntry entry() { return entry; }
 
             public Socket<OutputStream> output(final ArchiveEntrySource<?> source) {
                 // TODO: This should be deferred until the underlying socket is used to create an output stream.
-                if (source.entry() instanceof ZipEntry && COMPRESSED_FILE_EXTENSIONS.matcher(source.name()).matches()) {
-                    final ZipEntry origin = (ZipEntry) source.entry();
+                if (source.entry() instanceof ZipArchiveEntry && COMPRESSED_FILE_EXTENSIONS.matcher(source.name()).matches()) {
+                    final ZipArchiveEntry origin = (ZipArchiveEntry) source.entry();
                     final long size = origin.getSize();
 
-                    entry.setMethod(ZipOutputStream.STORED);
+                    entry.setMethod(ZipArchiveOutputStream.STORED);
                     entry.setSize(size);
                     entry.setCompressedSize(size);
                     entry.setCrc(origin.getCrc());
@@ -60,16 +60,23 @@ class ZipOutputStreamAdapter implements ArchiveFileOutput<ZipEntry> {
             public Socket<OutputStream> output() {
                 return () -> {
                     if (entry.isDirectory()) {
-                        entry.setMethod(ZipOutputStream.STORED);
+                        entry.setMethod(ZipArchiveOutputStream.STORED);
                         entry.setSize(0);
                         entry.setCompressedSize(0);
                         entry.setCrc(0);
                     }
-                    zip.putNextEntry(entry);
+                    zip.putArchiveEntry(entry);
                     return new FilterOutputStream(zip) {
 
+                        boolean closed;
+
                         @Override
-                        public void close() throws IOException { ((ZipOutputStream) out).closeEntry(); }
+                        public void close() throws IOException {
+                            if (!closed) {
+                                closed = true;
+                                ((ZipArchiveOutputStream) out).closeArchiveEntry(); // not idempotent!
+                            }
+                        }
                     };
                 };
             }

@@ -67,8 +67,8 @@ abstract class ArchiveFilePatch<F, D, S> {
          * exactly one filter.
          */
         EntryNameFilter[] passFilters(final ArchiveFileOutput<S> secondOutput) {
-            if (secondOutput.entry("").entry() instanceof JarArchiveEntry) {
-                // The JarInputStream class assumes that the file entry
+            if (secondOutput.sink("").entry() instanceof JarArchiveEntry) {
+                // java.util.JarInputStream assumes that the file entry
                 // "META-INF/MANIFEST.MF" should either be the first or the second
                 // entry (if preceded by the directory entry "META-INF/"), so we
                 // need to process the delta-archive file in two passes with a
@@ -98,8 +98,7 @@ abstract class ArchiveFilePatch<F, D, S> {
 
                 @Override
                 public Socket<OutputStream> output() {
-                    final ArchiveFileEntry<S> secondEntry = secondEntry(entryNameAndDigest.entryName());
-                    return secondSocket(secondEntry).map(out -> {
+                    return secondOutput.sink(entryNameAndDigest.entryName()).output().map(out -> {
                         final MessageDigest digest = digest();
                         digest.reset();
                         return new DigestOutputStream(out, digest) {
@@ -117,11 +116,6 @@ abstract class ArchiveFilePatch<F, D, S> {
                     });
                 }
 
-                private ArchiveFileEntry<S> secondEntry(String name) { return secondOutput.entry(name); }
-
-                private Socket<OutputStream> secondSocket(ArchiveFileEntry<S> secondEntry) {
-                    return secondOutput.output(secondEntry);
-                }
             }
 
             abstract class Patch<E> {
@@ -138,11 +132,10 @@ abstract class ArchiveFilePatch<F, D, S> {
                         if (!filter.accept(name)) {
                             continue;
                         }
-                        final Optional<ArchiveFileEntry<E>> entry = input().entry(name);
+                        final Optional<ArchiveEntrySource<E>> entry = input().source(name);
                         try {
                             copy(
-                                    input().source(entry.orElseThrow(() ->
-                                            ioException(new MissingArchiveEntryException(name)))),
+                                    entry.orElseThrow(() -> ioException(new MissingArchiveEntryException(name))),
                                     new MyArchiveEntrySink(entryNameAndDigestValue)
                             );
                         } catch (WrongMessageDigestException e) {

@@ -5,11 +5,11 @@
 package global.namespace.archive.api;
 
 /**
- * Adapts an underlying archive entry.
+ * An abstraction which adapts an underlying archive entry.
  *
  * @author Christian Schlichtherle
  */
-public abstract class ArchiveFileEntry<E> {
+public abstract class ArchiveEntry<E> {
 
     /** Returns the name of the underlying archive entry. */
     public abstract String name();
@@ -25,10 +25,10 @@ public abstract class ArchiveFileEntry<E> {
         if (this == obj) {
             return true;
         }
-        if (!(obj instanceof ArchiveFileEntry)) {
+        if (!(obj instanceof ArchiveEntry)) {
             return false;
         }
-        final ArchiveFileEntry that = (ArchiveFileEntry) obj;
+        final ArchiveEntry that = (ArchiveEntry) obj;
         return this.entry().equals(that.entry());
     }
 

@@ -4,7 +4,8 @@
  */
 package global.namespace.archive.commons.compress;
 
-import global.namespace.archive.api.ArchiveFileEntry;
+import global.namespace.archive.api.ArchiveEntrySink;
+import global.namespace.archive.api.ArchiveEntrySource;
 import global.namespace.archive.api.ArchiveFileInput;
 import global.namespace.fun.io.api.Socket;
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
@@ -16,7 +17,6 @@ import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.Optional;
 
-import static global.namespace.archive.commons.compress.CommonsCompress.archiveFileEntry;
 import static java.util.Objects.requireNonNull;
 
 /**
@@ -30,31 +30,34 @@ final class ZipFileAdapter implements ArchiveFileInput<ZipArchiveEntry> {
 
     ZipFileAdapter(final ZipFile input) { this.zip = requireNonNull(input); }
 
-    @Override
-    public Iterator<ArchiveFileEntry<ZipArchiveEntry>> iterator() {
-        return new Iterator<ArchiveFileEntry<ZipArchiveEntry>>() {
+    public Iterator<ArchiveEntrySource<ZipArchiveEntry>> iterator() {
+        return new Iterator<ArchiveEntrySource<ZipArchiveEntry>>() {
 
             final Enumeration<ZipArchiveEntry> en = zip.getEntries();
 
-            @Override
             public boolean hasNext() { return en.hasMoreElements(); }
 
-            @Override
-            public ArchiveFileEntry<ZipArchiveEntry> next() { return archiveFileEntry(en.nextElement()); }
-
-            @Override
-            public void remove() { throw new UnsupportedOperationException(); }
+            public ArchiveEntrySource<ZipArchiveEntry> next() { return source(en.nextElement()); }
         };
     }
 
-    @Override
-    public Optional<ArchiveFileEntry<ZipArchiveEntry>> entry(String name) {
-        return Optional.ofNullable(zip.getEntry(name)).map(CommonsCompress::archiveFileEntry);
+    public Optional<ArchiveEntrySource<ZipArchiveEntry>> source(String name) {
+        return Optional.ofNullable(zip.getEntry(name)).map(this::source);
     }
 
-    @Override
-    public Socket<InputStream> input(ArchiveFileEntry<ZipArchiveEntry> entry) {
-        return () -> zip.getInputStream(entry.entry());
+    private ArchiveEntrySource<ZipArchiveEntry> source(ZipArchiveEntry entry) {
+        return new ArchiveEntrySource<ZipArchiveEntry>() {
+
+            public String name() { return entry.getName(); }
+
+            public boolean isDirectory() { return entry.isDirectory(); }
+
+            public ZipArchiveEntry entry() { return entry; }
+
+            public Socket<InputStream> input(ArchiveEntrySink<?> sink) { return input(); }
+
+            public Socket<InputStream> input() { return () -> zip.getInputStream(entry); }
+        };
     }
 
     @Override

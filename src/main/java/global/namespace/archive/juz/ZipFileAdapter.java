@@ -4,7 +4,8 @@
  */
 package global.namespace.archive.juz;
 
-import global.namespace.archive.api.ArchiveFileEntry;
+import global.namespace.archive.api.ArchiveEntrySink;
+import global.namespace.archive.api.ArchiveEntrySource;
 import global.namespace.archive.api.ArchiveFileInput;
 import global.namespace.fun.io.api.Socket;
 
@@ -16,7 +17,6 @@ import java.util.Optional;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
-import static global.namespace.archive.juz.JUZ.archiveFileEntry;
 import static java.util.Objects.requireNonNull;
 
 /**
@@ -31,30 +31,35 @@ final class ZipFileAdapter implements ArchiveFileInput<ZipEntry> {
     ZipFileAdapter(final ZipFile input) { this.zip = requireNonNull(input); }
 
     @Override
-    public Iterator<ArchiveFileEntry<ZipEntry>> iterator() {
-        return new Iterator<ArchiveFileEntry<ZipEntry>>() {
+    public Iterator<ArchiveEntrySource<ZipEntry>> iterator() {
+        return new Iterator<ArchiveEntrySource<ZipEntry>>() {
 
             final Enumeration<? extends ZipEntry> en = zip.entries();
 
-            @Override
             public boolean hasNext() { return en.hasMoreElements(); }
 
-            @Override
-            public ArchiveFileEntry<ZipEntry> next() { return archiveFileEntry(en.nextElement()); }
-
-            @Override
-            public void remove() { throw new UnsupportedOperationException(); }
+            public ArchiveEntrySource<ZipEntry> next() { return source(en.nextElement()); }
         };
     }
 
     @Override
-    public Optional<ArchiveFileEntry<ZipEntry>> entry(String name) {
-        return Optional.ofNullable(zip.getEntry(name)).map(JUZ::archiveFileEntry);
+    public Optional<ArchiveEntrySource<ZipEntry>> source(String name) {
+        return Optional.ofNullable(zip.getEntry(name)).map(this::source);
     }
 
-    @Override
-    public Socket<InputStream> input(ArchiveFileEntry<ZipEntry> entry) {
-        return () -> zip.getInputStream(entry.entry());
+    private ArchiveEntrySource<ZipEntry> source(ZipEntry entry) {
+        return new ArchiveEntrySource<ZipEntry>() {
+
+            public String name() { return entry.getName(); }
+
+            public boolean isDirectory() { return entry.isDirectory(); }
+
+            public ZipEntry entry() { return entry; }
+
+            public Socket<InputStream> input(ArchiveEntrySink<?> sink) { return input(); }
+
+            public Socket<InputStream> input() { return () -> zip.getInputStream(entry); }
+        };
     }
 
     @Override

@@ -4,7 +4,6 @@
  */
 package global.namespace.archive.juz;
 
-import global.namespace.archive.api.ArchiveFileEntry;
 import global.namespace.archive.api.ArchiveFileInput;
 import global.namespace.archive.api.ArchiveFileOutput;
 import global.namespace.archive.api.ArchiveFileStore;
@@ -59,18 +58,6 @@ public class JUZ {
             public Socket<ArchiveFileOutput<ZipEntry>> output() {
                 return () -> new ZipOutputStreamAdapter(new ZipOutputStream(new FileOutputStream(file)));
             }
-        };
-    }
-
-    static ArchiveFileEntry<ZipEntry> archiveFileEntry(ZipEntry entry) {
-        return new ArchiveFileEntry<ZipEntry>() {
-
-            public String name() { return entry.getName(); }
-
-            @Override
-            public boolean isDirectory() { return entry.isDirectory(); }
-
-            public ZipEntry entry() { return entry; }
         };
     }
 }

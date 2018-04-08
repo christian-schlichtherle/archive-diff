@@ -5,26 +5,34 @@
 package global.namespace.archive.api;
 
 import global.namespace.fun.io.api.Sink;
+import global.namespace.fun.io.api.Socket;
 import global.namespace.fun.io.api.Source;
 
-public interface ArchiveEntrySink<E> extends Sink {
+import java.io.OutputStream;
 
-    /** Returns the name of the underlying archive entry. */
-    String name();
+/**
+ * An abstraction for writing the content of an underlying archive entry.
+ *
+ * @author Christian Schlichtherle
+ */
+public abstract class ArchiveEntrySink<E> extends ArchiveEntry<E> implements Sink {
 
-    /** Returns the underlying archive entry. */
-    E entry();
+    /**
+     * Returns an output stream socket for copying the underlying archive entry in this archive file from the given
+     * archive entry source.
+     */
+    public abstract Socket<OutputStream> output(ArchiveEntrySource<?> source);
 
-    /** Returns a sink for copying the underlying archive entry from the given source to this sink. */
-    default Sink prepareForCopyFrom(ArchiveEntrySource<?> source) { return this; }
+    /**
+     * Returns an archive file channel for copying the underlying archive entry in this archive file from the given
+     * archive entry source.
+     */
+    public ArchiveEntryChannel connect(ArchiveEntrySource<?> source) {
+        return new ArchiveEntryChannel() {
 
-    /** Returns an archive file channel for copying the underlying archive entry from the given source to this sink. */
-    default ArchiveFileChannel connect(ArchiveEntrySource<?> source) {
-        return new ArchiveFileChannel() {
+            public Source source() { return () -> source.input(ArchiveEntrySink.this); }
 
-            public Source source() { return source.prepareForCopyTo(ArchiveEntrySink.this); }
-
-            public Sink sink() { return ArchiveEntrySink.this.prepareForCopyFrom(source); }
+            public Sink sink() { return () -> ArchiveEntrySink.this.output(source); }
         };
     }
 }

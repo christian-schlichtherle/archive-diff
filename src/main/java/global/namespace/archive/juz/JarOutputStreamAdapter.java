@@ -4,14 +4,12 @@
  */
 package global.namespace.archive.juz;
 
-import global.namespace.archive.api.ArchiveFileEntry;
+import global.namespace.archive.api.ArchiveEntrySink;
 import global.namespace.archive.api.ArchiveFileOutput;
 
 import java.util.jar.JarEntry;
 import java.util.jar.JarOutputStream;
 import java.util.zip.ZipEntry;
-
-import static global.namespace.archive.juz.JUZ.archiveFileEntry;
 
 /**
  * Adapts a {@link JarOutputStream} to an {@link ArchiveFileOutput}.
@@ -23,5 +21,5 @@ final class JarOutputStreamAdapter extends ZipOutputStreamAdapter {
     JarOutputStreamAdapter(JarOutputStream jar) { super(jar); }
 
     @Override
-    public ArchiveFileEntry<ZipEntry> entry(String name) { return archiveFileEntry(new JarEntry(name)); }
+    public ArchiveEntrySink<ZipEntry> sink(String name) { return sink(new JarEntry(name)); }
 }

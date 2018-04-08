@@ -14,7 +14,7 @@ import global.namespace.fun.io.api.Source;
  * @see ArchiveEntrySink#connect(ArchiveEntrySource)
  * @author Christian Schlichtherle
  */
-public interface ArchiveFileChannel {
+public interface ArchiveEntryChannel {
 
     /** Returns the source. */
     Source source();

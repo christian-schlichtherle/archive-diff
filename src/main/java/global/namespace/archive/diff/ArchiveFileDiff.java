@@ -67,24 +67,14 @@ abstract class ArchiveFileDiff<F, S, D> {
                 private Streamer() throws Exception { encode(deltaOutput, model); }
 
                 private void stream() throws Exception {
-                    for (final ArchiveFileEntry<S> secondEntry : secondInput()) {
+                    for (final ArchiveEntrySource<S> secondEntry : secondInput()) {
                         final String name = secondEntry.name();
                         if (changedOrAdded(name)) {
-                            final ArchiveFileChannel channel = secondSource(secondEntry).connect(deltaSink(deltaEntry(name)));
+                            final ArchiveEntryChannel channel = secondEntry.connect(deltaOutput.sink(name));
                             copy(channel.source(), channel.sink());
                         }
                     }
                 }
-
-                private ArchiveEntrySource<S> secondSource(ArchiveFileEntry<S> secondEntry) {
-                    return secondInput().source(secondEntry);
-                }
-
-                private ArchiveEntrySink<D> deltaSink(ArchiveFileEntry<D> deltaEntry) {
-                    return deltaOutput.sink(deltaEntry);
-                }
-
-                private ArchiveFileEntry<D> deltaEntry(String name) { return deltaOutput.entry(name); }
 
                 private boolean changedOrAdded(String name) {
                     return null != model.changed(name) || null != model.added(name);
@@ -104,28 +94,25 @@ abstract class ArchiveFileDiff<F, S, D> {
              * the caller.
              */
             Assembly walkAndReturn(final Assembly assembly) throws Exception {
-                for (final ArchiveFileEntry<F> firstEntry : firstInput()) {
+                for (final ArchiveEntrySource<F> firstEntry : firstInput()) {
                     if (firstEntry.isDirectory()) {
                         continue;
                     }
-                    final Optional<ArchiveFileEntry<S>> secondEntry = secondInput().entry(firstEntry.name());
-                    final ArchiveEntrySource firstSource = firstInput().source(firstEntry);
+                    final Optional<ArchiveEntrySource<S>> secondEntry = secondInput().source(firstEntry.name());
                     if (secondEntry.isPresent()) {
-                        final ArchiveEntrySource secondSource = secondInput().source(secondEntry.get());
-                        assembly.visitEntriesInBothFiles(firstSource, secondSource);
+                        assembly.visitEntriesInBothFiles(firstEntry, secondEntry.get());
                     } else {
-                        assembly.visitEntryInFirstFile(firstSource);
+                        assembly.visitEntryInFirstFile(firstEntry);
                     }
                 }
 
-                for (final ArchiveFileEntry<S> secondEntry : secondInput()) {
+                for (final ArchiveEntrySource<S> secondEntry : secondInput()) {
                     if (secondEntry.isDirectory()) {
                         continue;
                     }
-                    final Optional<ArchiveFileEntry<F>> firstEntry = firstInput().entry(secondEntry.name());
+                    final Optional<ArchiveEntrySource<F>> firstEntry = firstInput().source(secondEntry.name());
                     if (!firstEntry.isPresent()) {
-                        final ArchiveEntrySource secondSource = secondInput().source(secondEntry);
-                        assembly.visitEntryInSecondFile(secondSource);
+                        assembly.visitEntryInSecondFile(secondEntry);
                     }
                 }
 
@@ -164,7 +151,8 @@ abstract class ArchiveFileDiff<F, S, D> {
              * @param firstSource the source for reading the archive entry in the first archive file.
              * @param secondSource the source for reading the archive entry in the second archive file.
              */
-            void visitEntriesInBothFiles(final ArchiveEntrySource firstSource, final ArchiveEntrySource secondSource)
+            void visitEntriesInBothFiles(final ArchiveEntrySource<F> firstSource,
+                                         final ArchiveEntrySource<S> secondSource)
                     throws Exception {
                 final String firstName = firstSource.name();
                 assert firstName.equals(secondSource.name());
@@ -182,7 +170,7 @@ abstract class ArchiveFileDiff<F, S, D> {
              *
              * @param firstSource the source for reading the archive entry in the first archive file.
              */
-            void visitEntryInFirstFile(final ArchiveEntrySource firstSource) throws Exception {
+            void visitEntryInFirstFile(final ArchiveEntrySource<F> firstSource) throws Exception {
                 final String firstName = firstSource.name();
                 removed.put(firstName, new EntryNameAndDigestValue(firstName, digestValueOf(firstSource)));
             }
@@ -192,7 +180,7 @@ abstract class ArchiveFileDiff<F, S, D> {
              *
              * @param secondSource the source for reading the archive entry in the second archive file.
              */
-            void visitEntryInSecondFile(final ArchiveEntrySource secondSource) throws Exception {
+            void visitEntryInSecondFile(final ArchiveEntrySource<S> secondSource) throws Exception {
                 final String secondName = secondSource.name();
                 added.put(secondName, new EntryNameAndDigestValue(secondName, digestValueOf(secondSource)));
             }

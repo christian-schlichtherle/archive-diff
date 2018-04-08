@@ -4,7 +4,6 @@
  */
 package global.namespace.archive.commons.compress;
 
-import global.namespace.archive.api.ArchiveFileEntry;
 import global.namespace.archive.api.ArchiveFileInput;
 import global.namespace.archive.api.ArchiveFileOutput;
 import global.namespace.archive.api.ArchiveFileStore;
@@ -40,7 +39,7 @@ public class CommonsCompress {
 
             @Override
             public Socket<ArchiveFileOutput<ZipArchiveEntry>> output() {
-                return () -> new JarOutputStreamAdapter(new JarArchiveOutputStream(new FileOutputStream(file)));
+                return () -> new JarArchiveOutputStreamAdapter(new JarArchiveOutputStream(new FileOutputStream(file)));
             }
         };
     }
@@ -57,20 +56,8 @@ public class CommonsCompress {
 
             @Override
             public Socket<ArchiveFileOutput<ZipArchiveEntry>> output() {
-                return () -> new ZipOutputStreamAdapter(new ZipArchiveOutputStream(file));
+                return () -> new ZipArchiveOutputStreamAdapter(new ZipArchiveOutputStream(file));
             }
-        };
-    }
-
-    static ArchiveFileEntry<ZipArchiveEntry> archiveFileEntry(ZipArchiveEntry entry) {
-        return new ArchiveFileEntry<ZipArchiveEntry>() {
-
-            public String name() { return entry.getName(); }
-
-            @Override
-            public boolean isDirectory() { return entry.isDirectory(); }
-
-            public ZipArchiveEntry entry() { return entry; }
         };
     }
 }
