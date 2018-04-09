@@ -8,7 +8,7 @@ Archive I/O provides:
 
 + An API for transparent access to archive files which is based on the API of [Fun I/O].
 + A facade for accessing JAR and ZIP files using [Apache Commons Compress].
-+ A facade for accessing JAR and ZIP files using `java.util.jar` and `java.util.zip`.
++ Another facade for accessing JAR and ZIP files using `java.util.jar` and `java.util.zip`.
 + A facade for diffing two archive files and generating a delta archive file.
 + A facade for patching an archive file from a generated delta archive file to another archive file.
 
