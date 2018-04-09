@@ -29,6 +29,6 @@ lazy val root: Project = project
       Scalacheck % Test,
       Scalatest % Test
     ),
-    name := "Archive Diff",
-    normalizedName := "archive-diff"
+    name := "Archive I/O",
+    normalizedName := "archive-io"
   )

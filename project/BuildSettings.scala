@@ -42,9 +42,9 @@ object BuildSettings {
 
   private def commonSettings: Seq[Setting[_]] = {
     Seq(
-      homepage := Some(url("https://github.com/christian-schlichtherle/archive-diff")),
+      homepage := Some(url("https://github.com/christian-schlichtherle/archive-io")),
       licenses := Seq("Apache License, Version 2.0" -> url("https://www.apache.org/licenses/LICENSE-2.0")),
-      organization := "global.namespace.archive-diff",
+      organization := "global.namespace.archive-io",
       organizationHomepage := Some(new URL("http://schlichtherle.de")),
       organizationName := "Schlichtherle IT Services",
       pomExtra := {
@@ -79,9 +79,9 @@ object BuildSettings {
         )
       },
       scmInfo := Some(ScmInfo(
-        browseUrl = url("https://github.com/christian-schlichtherle/archive-diff"),
-        connection = "scm:git:https://github.com/christian-schlichtherle/archive-diff.git",
-        devConnection = Some("scm:git:https://github.com/christian-schlichtherle/archive-diff.git")
+        browseUrl = url("https://github.com/christian-schlichtherle/archive-io"),
+        connection = "scm:git:https://github.com/christian-schlichtherle/archive-io.git",
+        devConnection = Some("scm:git:https://github.com/christian-schlichtherle/archive-io.git")
       ))
     )
   }
