@@ -1,9 +1,12 @@
 # Archive I/O [![Maven Central](https://img.shields.io/maven-central/v/global.namespace.archive-diff/archive-diff.svg)](http://search.maven.org/#search%7Cga%7C1%7Cg%3A%22global.namespace.archive-diff%22) [![Build Status](https://api.travis-ci.org/christian-schlichtherle/archive-diff.svg)](https://travis-ci.org/christian-schlichtherle/archive-diff)
 
 This library features diffing and patching of archive files like EAR, JAR, WAR, ZIP et al.
-In more detail, Archive I/O provides:
 
-+ An API for transparent access to archive files which is based on [Fun I/O].
+## Features
+
+Archive I/O provides:
+
++ An API for transparent access to archive files which is based on the API of [Fun I/O].
 + A facade for accessing JAR and ZIP files using [Apache Commons Compress].
 + A facade for accessing JAR and ZIP files using `java.util.jar` and `java.util.zip`.
 + A facade for diffing two archive files and generating a delta archive file.
