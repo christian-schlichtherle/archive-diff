@@ -53,7 +53,6 @@ lazy val delta: Project = project
   .dependsOn(api)
   .settings(
     libraryDependencies ++= Seq(
-      CommonsCompress,
       FunIoBios,
       FunIoJackson,
       Scalacheck % Test,
