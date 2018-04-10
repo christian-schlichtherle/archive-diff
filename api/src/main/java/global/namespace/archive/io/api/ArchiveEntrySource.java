@@ -15,4 +15,7 @@ public abstract class ArchiveEntrySource<E> extends ArchiveEntry<E> implements S
 
     /** Copies all data of the underlying archive entry in this archive file to the given archive entry sink. */
     public abstract void copyTo(ArchiveEntrySink<?> sink) throws Exception;
+
+    @Override
+    public boolean canEqual(Object that) { return that instanceof ArchiveEntrySource; }
 }

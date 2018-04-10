@@ -24,13 +24,15 @@ public abstract class ArchiveEntry<E> {
     public boolean equals(final Object obj) {
         if (this == obj) {
             return true;
-        }
-        if (!(obj instanceof ArchiveEntry)) {
+        } else if (this.canEqual(obj)) {
+            final ArchiveEntry that = (ArchiveEntry) obj;
+            return this.entry().equals(that.entry());
+        } else {
             return false;
         }
-        final ArchiveEntry that = (ArchiveEntry) obj;
-        return this.entry().equals(that.entry());
     }
+
+    public boolean canEqual(Object that) { return that instanceof ArchiveEntry; }
 
     @Override
     public int hashCode() { return entry().hashCode(); }

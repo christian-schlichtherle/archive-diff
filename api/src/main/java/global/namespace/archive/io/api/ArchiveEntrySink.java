@@ -11,4 +11,8 @@ import global.namespace.fun.io.api.Sink;
  *
  * @author Christian Schlichtherle
  */
-public abstract class ArchiveEntrySink<E> extends ArchiveEntry<E> implements Sink { }
+public abstract class ArchiveEntrySink<E> extends ArchiveEntry<E> implements Sink {
+
+    @Override
+    public boolean canEqual(Object that) { return that instanceof ArchiveEntrySink; }
+}
