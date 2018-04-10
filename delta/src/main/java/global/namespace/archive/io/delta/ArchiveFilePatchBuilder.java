@@ -15,13 +15,19 @@ import static java.util.Optional.empty;
 @SuppressWarnings({"OptionalUsedAsFieldOrParameterType", "ConstantConditions"})
 public class ArchiveFilePatchBuilder {
 
-    private Optional<ArchiveFileSource<?>> first = empty(), delta = empty();
+    private Optional<ArchiveFileSource<?>> base = empty(), delta = empty();
 
     ArchiveFilePatchBuilder() { }
 
-    /** Returns this archive file patch builder with the given source for reading the first archive file. */
-    public ArchiveFilePatchBuilder first(final ArchiveFileSource<?> first) {
-        this.first = Optional.of(first);
+    /**
+     * Returns this archive file patch builder with the given source for reading the first archive file.
+     * This is an alias for {@link #base(ArchiveFileSource)}.
+     */
+    public ArchiveFilePatchBuilder first(ArchiveFileSource<?> first) { return base(first); }
+
+    /** Returns this archive file patch builder with the given source for reading the base archive file. */
+    public ArchiveFilePatchBuilder base(final ArchiveFileSource<?> base) {
+        this.base = Optional.of(base);
         return this;
     }
 
@@ -33,14 +39,14 @@ public class ArchiveFilePatchBuilder {
 
     /** Writes the second archive file computed from the first and delta archive file to the given sink. */
     @SuppressWarnings("unchecked")
-    public void to(ArchiveFileSink<?> second) throws Exception { build().to(second); }
+    public void to(ArchiveFileSink<?> update) throws Exception { build().to(update); }
 
-    private ArchiveFilePatch build() { return create(first.get(), delta.get()); }
+    private ArchiveFilePatch build() { return create(base.get(), delta.get()); }
 
-    private static ArchiveFilePatch create(ArchiveFileSource<?> firstSource, ArchiveFileSource<?> deltaSource) {
+    private static ArchiveFilePatch create(ArchiveFileSource<?> baseSource, ArchiveFileSource<?> deltaSource) {
         return new ArchiveFilePatch() {
 
-            ArchiveFileSource<?> firstSource() { return firstSource; }
+            ArchiveFileSource<?> firstSource() { return baseSource; }
 
             ArchiveFileSource<?> deltaSource() { return deltaSource; }
         };

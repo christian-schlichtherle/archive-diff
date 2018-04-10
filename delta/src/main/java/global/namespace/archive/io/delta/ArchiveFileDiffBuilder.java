@@ -20,7 +20,7 @@ public class ArchiveFileDiffBuilder {
 
     private Optional<MessageDigest> digest = empty();
 
-    private Optional<ArchiveFileSource<?>> first = empty(), second = empty();
+    private Optional<ArchiveFileSource<?>> base = empty(), update = empty();
 
     ArchiveFileDiffBuilder() { }
 
@@ -30,15 +30,27 @@ public class ArchiveFileDiffBuilder {
         return this;
     }
 
-    /** Returns this archive file diff builder with the given source for reading the first archive file. */
-    public ArchiveFileDiffBuilder first(final ArchiveFileSource<?> first) {
-        this.first = Optional.of(first);
+    /**
+     * Returns this archive file diff builder with the given source for reading the first archive file.
+     * This is an alias for {@link #base(ArchiveFileSource)}.
+     */
+    public ArchiveFileDiffBuilder first(ArchiveFileSource<?> first) { return base(first); }
+
+    /** Returns this archive file diff builder with the given source for reading the base archive file. */
+    public ArchiveFileDiffBuilder base(final ArchiveFileSource<?> base) {
+        this.base = Optional.of(base);
         return this;
     }
 
-    /** Returns this archive file diff builder with the given source for reading the second archive file. */
-    public ArchiveFileDiffBuilder second(final ArchiveFileSource<?> second) {
-        this.second = Optional.of(second);
+    /**
+     * Returns this archive file diff builder with the given source for reading the second archive file.
+     * This is an alias for {@link #update(ArchiveFileSource)}.
+     */
+    public ArchiveFileDiffBuilder second(ArchiveFileSource<?> second) { return update(second); }
+
+    /** Returns this archive file diff builder with the given source for reading the update archive file. */
+    public ArchiveFileDiffBuilder update(final ArchiveFileSource<?> update) {
+        this.update = Optional.of(update);
         return this;
     }
 
@@ -50,19 +62,19 @@ public class ArchiveFileDiffBuilder {
     public DeltaModel deltaModel() throws Exception { return build().deltaModel(); }
 
     private ArchiveFileDiff build() {
-        return create(digest.orElseGet(MessageDigests::sha1), first.get(), second.get());
+        return create(digest.orElseGet(MessageDigests::sha1), base.get(), update.get());
     }
 
     private static ArchiveFileDiff create(MessageDigest digest,
-                                          ArchiveFileSource<?> firstSource,
-                                          ArchiveFileSource<?> secondSource) {
+                                          ArchiveFileSource<?> baseSource,
+                                          ArchiveFileSource<?> updateSource) {
         return new ArchiveFileDiff() {
 
             MessageDigest digest() { return digest; }
 
-            ArchiveFileSource<?> firstSource() { return firstSource; }
+            ArchiveFileSource<?> firstSource() { return baseSource; }
 
-            ArchiveFileSource<?> secondSource() { return secondSource; }
+            ArchiveFileSource<?> secondSource() { return updateSource; }
         };
     }
 }

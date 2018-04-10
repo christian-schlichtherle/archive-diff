@@ -39,12 +39,12 @@ public class Delta {
     private static final String META_INF_DELTA_JSON = "META-INF/delta.json";
 
     /**
-     * Returns a builder for comparing a first archive file to a second archive file and generating a delta archive
+     * Returns a builder for comparing a base archive file to an update archive file and generating a delta archive
      * file.
      */
     public static ArchiveFileDiffBuilder diff() { return new ArchiveFileDiffBuilder(); }
 
-    /** Returns a builder for patching the first archive file to a second archive file using a delta archive file. */
+    /** Returns a builder for patching a base archive file to an update archive file using a delta archive file. */
     public static ArchiveFilePatchBuilder patch() { return new ArchiveFilePatchBuilder(); }
 
     static <E> void encodeModel(ArchiveFileOutput<E> output, DeltaModel model) throws Exception {
