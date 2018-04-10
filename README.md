@@ -17,8 +17,7 @@ Archive I/O has a modular structure and its artifacts are hosted on Maven Centra
 `global.namespace.archive-io`.
 The following diagram shows the module structure:
 
-@startuml
-
+```plantuml
 folder global.namespace.archive-io {
     [archive-io-api] <|-- [archive-io-commons-compress]
     [archive-io-api] <-- [archive-io-delta]
@@ -38,8 +37,7 @@ folder global.namespace.archive-io {
 [archive-io-delta] "this" <-- [client-application]
 [archive-io-juz] "and either this" <.. [client-application]
 [archive-io-commons-compress] "or that" <.. [client-application]
-
-@enduml
+```
 
 The modules are:
 
