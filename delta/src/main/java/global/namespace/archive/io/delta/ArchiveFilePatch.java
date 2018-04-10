@@ -7,7 +7,6 @@ package global.namespace.archive.io.delta;
 import global.namespace.archive.io.api.*;
 import global.namespace.archive.io.delta.model.DeltaModel;
 import global.namespace.archive.io.delta.model.EntryNameAndDigestValue;
-import global.namespace.archive.io.delta.model.EntryNameAndTwoDigestValues;
 import global.namespace.fun.io.api.Sink;
 import global.namespace.fun.io.api.Socket;
 import global.namespace.fun.io.api.function.XConsumer;
@@ -28,25 +27,25 @@ import static global.namespace.fun.io.bios.BIOS.copy;
 import static java.util.Arrays.asList;
 
 /**
- * Patches a first archive file to a second archive file using a delta archive file.
+ * Patches a base archive file to an update archive file using a delta archive file.
  *
  * @author Christian Schlichtherle
  */
 abstract class ArchiveFilePatch<F, D, S> {
 
-    abstract ArchiveFileSource<F> firstSource();
+    abstract ArchiveFileSource<F> baseSource();
 
     abstract ArchiveFileSource<D> deltaSource();
 
-    void to(ArchiveFileSink<S> second) throws Exception {
-        accept(engine -> second.acceptWriter(engine::to));
+    void to(ArchiveFileSink<S> update) throws Exception {
+        accept(engine -> update.acceptWriter(engine::to));
     }
 
     private void accept(final XConsumer<Engine> consumer) throws Exception {
-        firstSource().acceptReader(firstInput -> deltaSource().acceptReader(deltaInput -> consumer.accept(
+        baseSource().acceptReader(baseInput -> deltaSource().acceptReader(deltaInput -> consumer.accept(
                 new Engine() {
 
-                    ArchiveFileInput<F> firstInput() { return firstInput; }
+                    ArchiveFileInput<F> baseInput() { return baseInput; }
 
                     ArchiveFileInput<D> deltaInput() { return deltaInput; }
                 }
@@ -57,24 +56,24 @@ abstract class ArchiveFilePatch<F, D, S> {
 
         DeltaModel model;
 
-        abstract ArchiveFileInput<F> firstInput();
+        abstract ArchiveFileInput<F> baseInput();
 
         abstract ArchiveFileInput<D> deltaInput();
 
-        void to(final ArchiveFileOutput<S> secondOutput) throws Exception {
-            for (Predicate<String> filter : passFilters(secondOutput)) {
-                to(secondOutput, t -> !t.endsWith("/") && filter.test(t)); // exclude directories
+        void to(final ArchiveFileOutput<S> updateOutput) throws Exception {
+            for (Predicate<String> filter : passFilters(updateOutput)) {
+                to(updateOutput, t -> !t.endsWith("/") && filter.test(t)); // exclude directories
             }
         }
 
         /**
-         * Returns a list of filters for the different passes required to process the to-archive file.
+         * Returns a list of filters for the different passes required to generate the update archive file.
          * At least one filter is required to output anything.
          * The filters should properly partition the set of entry sources, i.e. each entry source should be accepted by
          * exactly one filter.
          */
-        Iterable<Predicate<String>> passFilters(final ArchiveFileOutput<S> secondOutput) {
-            if (secondOutput.isJar()) {
+        Iterable<Predicate<String>> passFilters(final ArchiveFileOutput<S> updateOutput) {
+            if (updateOutput.isJar()) {
                 // java.util.JarInputStream assumes that the file entry
                 // "META-INF/MANIFEST.MF" should either be the first or the second
                 // entry (if preceded by the directory entry "META-INF/"), so we
@@ -92,7 +91,7 @@ abstract class ArchiveFilePatch<F, D, S> {
             }
         }
 
-        void to(final ArchiveFileOutput<S> secondOutput, final Predicate<String> filter) throws Exception {
+        void to(final ArchiveFileOutput<S> updateOutput, final Predicate<String> filter) throws Exception {
 
             class MyArchiveEntrySink implements Sink {
 
@@ -105,7 +104,7 @@ abstract class ArchiveFilePatch<F, D, S> {
 
                 @Override
                 public Socket<OutputStream> output() {
-                    return secondOutput.sink(entryNameAndDigest.entryName()).output().map(out -> {
+                    return updateOutput.sink(entryNameAndDigest.name()).output().map(out -> {
                         final MessageDigest digest = digest();
                         digest.reset();
                         return new DigestOutputStream(out, digest) {
@@ -114,7 +113,7 @@ abstract class ArchiveFilePatch<F, D, S> {
                             public void close() throws IOException {
                                 super.close();
                                 if (!valueOfDigest().equals(entryNameAndDigest.digestValue())) {
-                                    throw new WrongMessageDigestException(entryNameAndDigest.entryName());
+                                    throw new WrongMessageDigestException(entryNameAndDigest.name());
                                 }
                             }
 
@@ -133,7 +132,7 @@ abstract class ArchiveFilePatch<F, D, S> {
 
                 final void apply(final Collection<EntryNameAndDigestValue> collection) throws Exception {
                     for (final EntryNameAndDigestValue entryNameAndDigestValue : collection) {
-                        final String name = entryNameAndDigestValue.entryName();
+                        final String name = entryNameAndDigestValue.name();
                         if (!filter.test(name)) {
                             continue;
                         }
@@ -150,13 +149,13 @@ abstract class ArchiveFilePatch<F, D, S> {
                 }
             }
 
-            class OnFirstInputPatch extends Patch<F> {
+            class OnBaseInputPatch extends Patch<F> {
 
                 @Override
-                ArchiveFileInput<F> input() { return firstInput(); }
+                ArchiveFileInput<F> input() { return baseInput(); }
 
                 @Override
-                IOException ioException(Throwable cause) { return new WrongFirstArchiveFileException(cause); }
+                IOException ioException(Throwable cause) { return new WrongBaseArchiveFileException(cause); }
             }
 
             class OnDeltaInputPatch extends Patch<D> {
@@ -169,10 +168,10 @@ abstract class ArchiveFilePatch<F, D, S> {
             }
 
             // Order is important here!
-            new OnFirstInputPatch().apply(model().unchangedEntries());
+            new OnBaseInputPatch().apply(model().unchangedEntries());
             new OnDeltaInputPatch().apply(model().changedEntries()
                     .stream()
-                    .map(EntryNameAndTwoDigestValues::secondEntryNameAndDigestValue)
+                    .map(change -> new EntryNameAndDigestValue(change.name(), change.updateDigestValue()))
                     .collect(Collectors.toList()));
             new OnDeltaInputPatch().apply(model().addedEntries());
         }

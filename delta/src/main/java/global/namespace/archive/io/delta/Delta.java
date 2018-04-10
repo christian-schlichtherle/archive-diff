@@ -110,9 +110,9 @@ public class Delta {
         } else {
             return v.stream().map(entry -> {
                 final EntryNameAndTwoDigestValuesDTO dto = new EntryNameAndTwoDigestValuesDTO();
-                dto.name = entry.entryName();
-                dto.first = entry.firstDigestValue();
-                dto.second = entry.secondDigestValue();
+                dto.name = entry.name();
+                dto.first = entry.baseDigestValue();
+                dto.second = entry.updateDigestValue();
                 return dto;
             }).toArray(EntryNameAndTwoDigestValuesDTO[]::new);
         }
@@ -130,7 +130,7 @@ public class Delta {
         } else {
             return v.stream().map(entry -> {
                 final EntryNameAndDigestValueDTO dto = new EntryNameAndDigestValueDTO();
-                dto.name = entry.entryName();
+                dto.name = entry.name();
                 dto.digest = entry.digestValue();
                 return dto;
             }).toArray(EntryNameAndDigestValueDTO[]::new);

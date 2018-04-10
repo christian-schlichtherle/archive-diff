@@ -25,12 +25,12 @@ class ArchiveFileDiffAndPatchSpec extends WordSpec {
   "An archive file diff" should {
     "correctly partition the entry names and digests" in {
       forAllArchives { (a, b) => { _ =>
-        val model = (diff first a second b digest sha1).deltaModel
+        val model = (diff base a update b digest sha1).deltaModel
         import model._
-        changedEntries.asScala map (_.entryName) shouldBe List("differentEntrySize")
-        addedEntries.asScala map (_.entryName) shouldBe List("entryOnlyInFile2")
-        removedEntries.asScala map (_.entryName) shouldBe List("entryOnlyInFile1")
-        unchangedEntries.asScala map (_.entryName) shouldBe List("META-INF/MANIFEST.MF", "differentEntryTime", "equalEntry")
+        changedEntries.asScala map (_.name) shouldBe List("differentEntrySize")
+        addedEntries.asScala map (_.name) shouldBe List("entryOnlyInFile2")
+        removedEntries.asScala map (_.name) shouldBe List("entryOnlyInFile1")
+        unchangedEntries.asScala map (_.name) shouldBe List("META-INF/MANIFEST.MF", "differentEntryTime", "equalEntry")
       }}
     }
   }
@@ -41,18 +41,18 @@ class ArchiveFileDiffAndPatchSpec extends WordSpec {
         withTempArchiveStore { c =>
           withTempArchiveStore { b2 =>
 
-            diff first a second b digest md5 to c
-            patch first a delta c to b2
+            diff base a update b digest md5 to c
+            patch base a delta c to b2
 
             val unchangedReference: List[String] = {
               b applyReader (_.asScala.filter(!_.isDirectory).map(_.name).toList)
             }
 
-            val model = (diff first b second b2 digest sha1).deltaModel
+            val model = (diff base b update b2 digest sha1).deltaModel
             model.changedEntries shouldBe empty
             model.addedEntries shouldBe empty
             model.removedEntries shouldBe empty
-            model.unchangedEntries.asScala map (_.entryName) shouldBe unchangedReference
+            model.unchangedEntries.asScala map (_.name) shouldBe unchangedReference
           }
         }
       }}

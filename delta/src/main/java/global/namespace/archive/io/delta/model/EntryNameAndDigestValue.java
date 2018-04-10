@@ -13,15 +13,15 @@ import static java.util.Objects.requireNonNull;
  */
 public final class EntryNameAndDigestValue {
 
-    private final String entryName, digestValue;
+    private final String name, digestValue;
 
-    public EntryNameAndDigestValue(final String entryName, final String digestValue) {
-        this.entryName = requireNonNull(entryName);
+    public EntryNameAndDigestValue(final String name, final String digestValue) {
+        this.name = requireNonNull(name);
         this.digestValue = requireNonNull(digestValue);
     }
 
     /** Returns the entry name. */
-    public String entryName() { return entryName; }
+    public String name() { return name; }
 
     /** Returns the value of the message digest. */
     public String digestValue() { return digestValue; }
@@ -35,13 +35,13 @@ public final class EntryNameAndDigestValue {
             return false;
         }
         final EntryNameAndDigestValue that = (EntryNameAndDigestValue) obj;
-        return this.entryName().equals(that.entryName()) && this.digestValue().equals(that.digestValue());
+        return this.name().equals(that.name()) && this.digestValue().equals(that.digestValue());
     }
 
     @Override
     public int hashCode() {
         int hash = 17;
-        hash = 31 * hash + entryName().hashCode();
+        hash = 31 * hash + name().hashCode();
         hash = 31 * hash + digestValue().hashCode();
         return hash;
     }

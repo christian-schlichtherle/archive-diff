@@ -21,7 +21,7 @@ import static global.namespace.archive.io.delta.MessageDigests.updateDigestFrom;
 import static global.namespace.archive.io.delta.MessageDigests.valueOf;
 
 /**
- * Compares a first archive file to a second archive file and generates a delta archive file.
+ * Compares a base archive file to an update archive file and generates a delta archive file.
  *
  * @author Christian Schlichtherle
  */
@@ -29,9 +29,9 @@ abstract class ArchiveFileDiff<F, S, D> {
 
     abstract MessageDigest digest();
 
-    abstract ArchiveFileSource<F> firstSource();
+    abstract ArchiveFileSource<F> baseSource();
 
-    abstract ArchiveFileSource<S> secondSource();
+    abstract ArchiveFileSource<S> updateSource();
 
     void to(ArchiveFileSink<D> delta) throws Exception {
         apply(engine -> {
@@ -43,21 +43,21 @@ abstract class ArchiveFileDiff<F, S, D> {
     DeltaModel deltaModel() throws Exception { return apply(Engine::deltaModel); }
 
     private <T> T apply(XFunction<Engine, T> function) throws Exception {
-        return firstSource().applyReader(firstInput -> secondSource().applyReader(secondInput -> function.apply(
+        return baseSource().applyReader(baseInput -> updateSource().applyReader(updateInput -> function.apply(
                 new Engine() {
 
-                    ArchiveFileInput<F> firstInput() { return firstInput; }
+                    ArchiveFileInput<F> baseInput() { return baseInput; }
 
-                    ArchiveFileInput<S> secondInput() { return secondInput; }
+                    ArchiveFileInput<S> updateInput() { return updateInput; }
                 }
         )));
     }
 
     private abstract class Engine {
 
-        abstract ArchiveFileInput<F> firstInput();
+        abstract ArchiveFileInput<F> baseInput();
 
-        abstract ArchiveFileInput<S> secondInput();
+        abstract ArchiveFileInput<S> updateInput();
 
         void to(final ArchiveFileOutput<D> deltaOutput) throws Exception {
 
@@ -68,10 +68,10 @@ abstract class ArchiveFileDiff<F, S, D> {
                 private Streamer() throws Exception { encodeModel(deltaOutput, model); }
 
                 private void stream() throws Exception {
-                    for (final ArchiveEntrySource<S> secondEntry : secondInput()) {
-                        final String name = secondEntry.name();
+                    for (final ArchiveEntrySource<S> updateEntry : updateInput()) {
+                        final String name = updateEntry.name();
                         if (changedOrAdded(name)) {
-                            secondEntry.copyTo(deltaOutput.sink(name));
+                            updateEntry.copyTo(deltaOutput.sink(name));
                         }
                     }
                 }
@@ -94,25 +94,25 @@ abstract class ArchiveFileDiff<F, S, D> {
              * the caller.
              */
             Assembly walkAndReturn(final Assembly assembly) throws Exception {
-                for (final ArchiveEntrySource<F> firstEntry : firstInput()) {
-                    if (firstEntry.isDirectory()) {
+                for (final ArchiveEntrySource<F> baseEntry : baseInput()) {
+                    if (baseEntry.isDirectory()) {
                         continue;
                     }
-                    final Optional<ArchiveEntrySource<S>> secondEntry = secondInput().source(firstEntry.name());
-                    if (secondEntry.isPresent()) {
-                        assembly.visitEntriesInBothFiles(firstEntry, secondEntry.get());
+                    final Optional<ArchiveEntrySource<S>> updateEntry = updateInput().source(baseEntry.name());
+                    if (updateEntry.isPresent()) {
+                        assembly.visitEntriesInBothFiles(baseEntry, updateEntry.get());
                     } else {
-                        assembly.visitEntryInFirstFile(firstEntry);
+                        assembly.visitEntryInBaseFile(baseEntry);
                     }
                 }
 
-                for (final ArchiveEntrySource<S> secondEntry : secondInput()) {
-                    if (secondEntry.isDirectory()) {
+                for (final ArchiveEntrySource<S> updateEntry : updateInput()) {
+                    if (updateEntry.isDirectory()) {
                         continue;
                     }
-                    final Optional<ArchiveEntrySource<F>> firstEntry = firstInput().source(secondEntry.name());
-                    if (!firstEntry.isPresent()) {
-                        assembly.visitEntryInSecondFile(secondEntry);
+                    final Optional<ArchiveEntrySource<F>> baseEntry = baseInput().source(updateEntry.name());
+                    if (!baseEntry.isPresent()) {
+                        assembly.visitEntryInUpdateFile(updateEntry);
                     }
                 }
 
@@ -146,43 +146,43 @@ abstract class ArchiveFileDiff<F, S, D> {
             }
 
             /**
-             * Visits a pair of archive entries with equal names in the first and second archive file.
+             * Visits a pair of archive entries with equal names in the base and update archive file.
              *
-             * @param firstSource the source for reading the archive entry in the first archive file.
-             * @param secondSource the source for reading the archive entry in the second archive file.
+             * @param baseEntry the source for reading the archive entry in the base archive file.
+             * @param updateEntry the source for reading the archive entry in the update archive file.
              */
-            void visitEntriesInBothFiles(final ArchiveEntrySource<F> firstSource,
-                                         final ArchiveEntrySource<S> secondSource)
+            void visitEntriesInBothFiles(final ArchiveEntrySource<F> baseEntry,
+                                         final ArchiveEntrySource<S> updateEntry)
                     throws Exception {
-                final String firstName = firstSource.name();
-                assert firstName.equals(secondSource.name());
-                final String firstValue = digestValueOf(firstSource);
-                final String secondValue = digestValueOf(secondSource);
-                if (firstValue.equals(secondValue)) {
-                    unchanged.put(firstName, new EntryNameAndDigestValue(firstName, firstValue));
+                final String name = baseEntry.name();
+                assert name.equals(updateEntry.name());
+                final String baseValue = digestValueOf(baseEntry);
+                final String updateValue = digestValueOf(updateEntry);
+                if (baseValue.equals(updateValue)) {
+                    unchanged.put(name, new EntryNameAndDigestValue(name, baseValue));
                 } else {
-                    changed.put(firstName, new EntryNameAndTwoDigestValues(firstName, firstValue, secondValue));
+                    changed.put(name, new EntryNameAndTwoDigestValues(name, baseValue, updateValue));
                 }
             }
 
             /**
-             * Visits an archive entry which is present in the first archive file, but not in the second archive file.
+             * Visits an archive entry which is present in the base archive file, but not in the update archive file.
              *
-             * @param firstSource the source for reading the archive entry in the first archive file.
+             * @param baseEntry the source for reading the archive entry in the base archive file.
              */
-            void visitEntryInFirstFile(final ArchiveEntrySource<F> firstSource) throws Exception {
-                final String firstName = firstSource.name();
-                removed.put(firstName, new EntryNameAndDigestValue(firstName, digestValueOf(firstSource)));
+            void visitEntryInBaseFile(final ArchiveEntrySource<F> baseEntry) throws Exception {
+                final String name = baseEntry.name();
+                removed.put(name, new EntryNameAndDigestValue(name, digestValueOf(baseEntry)));
             }
 
             /**
-             * Visits an archive entry which is present in the second archive file, but not in the first archive file.
+             * Visits an archive entry which is present in the update archive file, but not in the base archive file.
              *
-             * @param secondSource the source for reading the archive entry in the second archive file.
+             * @param updateEntry the source for reading the archive entry in the update archive file.
              */
-            void visitEntryInSecondFile(final ArchiveEntrySource<S> secondSource) throws Exception {
-                final String secondName = secondSource.name();
-                added.put(secondName, new EntryNameAndDigestValue(secondName, digestValueOf(secondSource)));
+            void visitEntryInUpdateFile(final ArchiveEntrySource<S> updateEntry) throws Exception {
+                final String name = updateEntry.name();
+                added.put(name, new EntryNameAndDigestValue(name, digestValueOf(updateEntry)));
             }
 
             String digestValueOf(final Source source) throws Exception {

@@ -50,7 +50,7 @@ import static global.namespace.archive.io.delta.Delta.*;
 File base = ...;
 File update = ...;
 File delta = ...;
-diff().first(jar(base)).second(jar(update)).to(jar(delta));
+diff().base(jar(base)).update(jar(update)).to(jar(delta));
 ```
 
 If you wanted to use the `archive-io-juz` module instead of the `archive-io-commons-compress` module, then, apart from
@@ -71,7 +71,7 @@ import static global.namespace.archive.io.juz.JUZ.*;
 File base = ...;
 File update = ...;
 File delta = ...;
-patch().first(jar(base)).delta(jar(delta)).to(jar(update));
+patch().base(jar(base)).delta(jar(delta)).to(jar(update));
 ```
 
 ### Diffing two ZIP files and computing a delta model
@@ -90,7 +90,7 @@ import static global.namespace.archive.io.juz.JUZ.*;
 
 File base = ...;
 File update = ...;
-DeltaModel model = diff().first(zip(base)).second(zip(update)).deltaModel();
+DeltaModel model = diff().base(zip(base)).update(zip(update)).deltaModel();
 ```
 
 The delta model has properties describing the changed, unchanged, added and removed entries.

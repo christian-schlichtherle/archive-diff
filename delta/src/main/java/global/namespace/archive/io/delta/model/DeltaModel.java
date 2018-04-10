@@ -66,7 +66,7 @@ public final class DeltaModel {
     private static Map<String, EntryNameAndTwoDigestValues> changedMap(final Collection<EntryNameAndTwoDigestValues> entries) {
         final Map<String, EntryNameAndTwoDigestValues> map = new LinkedHashMap<>(initialCapacity(entries));
         for (EntryNameAndTwoDigestValues entryNameAndTwoDigestValues : entries) {
-            map.put(entryNameAndTwoDigestValues.entryName(), entryNameAndTwoDigestValues);
+            map.put(entryNameAndTwoDigestValues.name(), entryNameAndTwoDigestValues);
         }
         return unmodifiableMap(map);
     }
@@ -74,7 +74,7 @@ public final class DeltaModel {
     private static Map<String, EntryNameAndDigestValue> unchangedMap(final Collection<EntryNameAndDigestValue> entries) {
         final Map<String, EntryNameAndDigestValue> map = new LinkedHashMap<>(initialCapacity(entries));
         for (EntryNameAndDigestValue entryNameAndDigestValue : entries) {
-            map.put(entryNameAndDigestValue.entryName(), entryNameAndDigestValue);
+            map.put(entryNameAndDigestValue.name(), entryNameAndDigestValue);
         }
         return unmodifiableMap(map);
     }

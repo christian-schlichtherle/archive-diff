@@ -13,41 +13,30 @@ import static java.util.Objects.requireNonNull;
  */
 public final class EntryNameAndTwoDigestValues {
 
-    private final String entryName, firstDigestValue, secondDigestValue;
+    private final String name, baseDigestValue, updateDigestValue;
 
     /**
      * Default constructor.
      * The first and second message digest should not be equal.
      */
     public EntryNameAndTwoDigestValues(
-            final String entryName,
-            final String firstDigestValue,
-            final String secondDigestValue) {
-        this.entryName = requireNonNull(entryName);
-        this.firstDigestValue = requireNonNull(firstDigestValue);
-        this.secondDigestValue = requireNonNull(secondDigestValue);
-        assert !firstDigestValue.equals(secondDigestValue);
+            final String name,
+            final String baseDigestValue,
+            final String updateDigestValue) {
+        this.name = requireNonNull(name);
+        this.baseDigestValue = requireNonNull(baseDigestValue);
+        this.updateDigestValue = requireNonNull(updateDigestValue);
+        assert !baseDigestValue.equals(updateDigestValue);
     }
 
-    /** Returns the entry name. */
-    public String entryName() { return entryName; }
+    /** Returns the archive entry name. */
+    public String name() { return name; }
 
-    /** Returns the first message digest value. */
-    public String firstDigestValue() { return firstDigestValue; }
+    /** Returns the message digest value of the archive entry in the base archive file. */
+    public String baseDigestValue() { return baseDigestValue; }
 
-    /** Returns the second message digest value. */
-    public String secondDigestValue() { return secondDigestValue; }
-
-    /** Returns the first archive entry name and digest value. */
-    @Deprecated
-    public EntryNameAndDigestValue firstEntryNameAndDigestValue() {
-        return new EntryNameAndDigestValue(entryName(), firstDigestValue());
-    }
-
-    /** Returns the second archive entry name and digest value. */
-    public EntryNameAndDigestValue secondEntryNameAndDigestValue() {
-        return new EntryNameAndDigestValue(entryName(), secondDigestValue());
-    }
+    /** Returns the message digest value of the archive entry in the update archive file. */
+    public String updateDigestValue() { return updateDigestValue; }
 
     @Override
     public boolean equals(final Object obj) {
@@ -58,17 +47,17 @@ public final class EntryNameAndTwoDigestValues {
             return false;
         }
         final EntryNameAndTwoDigestValues that = (EntryNameAndTwoDigestValues) obj;
-        return  this.entryName().equals(that.entryName()) &&
-                this.firstDigestValue().equals(that.firstDigestValue()) &&
-                this.secondDigestValue().equals(that.secondDigestValue());
+        return  this.name().equals(that.name()) &&
+                this.baseDigestValue().equals(that.baseDigestValue()) &&
+                this.updateDigestValue().equals(that.updateDigestValue());
     }
 
     @Override
     public int hashCode() {
         int hash = 17;
-        hash = 31 * hash + entryName().hashCode();
-        hash = 31 * hash + firstDigestValue().hashCode();
-        hash = 31 * hash + secondDigestValue().hashCode();
+        hash = 31 * hash + name().hashCode();
+        hash = 31 * hash + baseDigestValue().hashCode();
+        hash = 31 * hash + updateDigestValue().hashCode();
         return hash;
     }
 }

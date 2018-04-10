@@ -46,7 +46,7 @@ public class ArchiveFilePatchBuilder {
     private static ArchiveFilePatch create(ArchiveFileSource<?> baseSource, ArchiveFileSource<?> deltaSource) {
         return new ArchiveFilePatch() {
 
-            ArchiveFileSource<?> firstSource() { return baseSource; }
+            ArchiveFileSource<?> baseSource() { return baseSource; }
 
             ArchiveFileSource<?> deltaSource() { return deltaSource; }
         };

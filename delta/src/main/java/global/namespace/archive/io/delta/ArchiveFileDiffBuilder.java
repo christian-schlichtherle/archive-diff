@@ -72,9 +72,9 @@ public class ArchiveFileDiffBuilder {
 
             MessageDigest digest() { return digest; }
 
-            ArchiveFileSource<?> firstSource() { return baseSource; }
+            ArchiveFileSource<?> baseSource() { return baseSource; }
 
-            ArchiveFileSource<?> secondSource() { return updateSource; }
+            ArchiveFileSource<?> updateSource() { return updateSource; }
         };
     }
 }
