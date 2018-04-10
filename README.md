@@ -17,7 +17,7 @@ Archive I/O has a modular structure and its artifacts are hosted on Maven Centra
 `global.namespace.archive-io`.
 The following diagram shows the module structure:
 
-[Module Structure](module-structure.svg)
+![Module Structure](module-structure.svg)
 
 The modules are:
 
