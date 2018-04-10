@@ -4,8 +4,6 @@ This library features diffing and patching of archive files like EAR, JAR, WAR, 
 
 ## Features
 
-Archive I/O features:
-
 + An API for transparent access to archive files which is based on the API of [Fun I/O].
 + A facade for accessing JAR and ZIP files which depends on [Apache Commons Compress].
 + Another facade for accessing JAR and ZIP files which depends on `java.util.jar` and `java.util.zip`.
@@ -13,15 +11,15 @@ Archive I/O features:
 
 ## Structure
 
-Archive I/O has a modular structure and its artifacts are hosted on Maven Central with the common group ID
-`global.namespace.archive-io`.
+Archive I/O has a modular structure.
+Its artifacts are hosted on Maven Central with the common group ID `global.namespace.archive-io`.
 The following diagram shows the module structure:
 
 ![Module Structure](module-structure.svg)
 
 The modules are:
 
-+ `archive-io-api`: Provides the API for accessing archive files.
++ `archive-io-api`: Provides an API for accessing archive files.
   The base package of this module is `global.namespace.archive.io.api`.
 + `archive-io-commons-compress`: Implements the API and provides a facade for accessing JAR and ZIP files.
   This module depends on Apache Commons Compress and provides best performance for diffing and patching.
@@ -41,7 +39,7 @@ Thus, for diffing and patching, your application needs to depend on the modules 
 
 The following code diffs two JAR files and generates a delta JAR file.
 It uses the `Compress` facade to access the JAR files using Apache Commons Compress.
-It also uses the `Delta` facade for the actual diffing.
+It also uses the `Delta` facade for the actual diffing:
 
 ```java
 import java.io.File;
@@ -49,10 +47,10 @@ import java.io.File;
 import static global.namespace.archive.io.commons.compress.Compress.*;
 import static global.namespace.archive.io.delta.Delta.*;
 
-File first = ...;
-File second = ...;
+File base = ...;
+File update = ...;
 File delta = ...;
-diff().first(jar(first)).second(jar(second)).to(jar(delta));
+diff().first(jar(base)).second(jar(update)).to(jar(delta));
 ```
 
 If you wanted to use the `archive-io-juz` module instead of the `archive-io-commons-compress` module, then, apart from
@@ -62,7 +60,7 @@ configuring the class path, you would only have to edit the `import` statement a
 
 The following code patches a JAR file from a delta JAR file to another JAR file.
 It uses the `JUZ` facade to access the JAR files using `java.util.jar`.
-It also uses the `Delta` facade for the actual patching.
+It also uses the `Delta` facade for the actual patching:
 
 ```java
 import java.io.File;
@@ -70,10 +68,10 @@ import java.io.File;
 import static global.namespace.archive.io.delta.Delta.*;
 import static global.namespace.archive.io.juz.JUZ.*;
 
-File first = ...;
-File second = ...;
+File base = ...;
+File update = ...;
 File delta = ...;
-patch().first(jar(first)).delta(jar(delta)).to(jar(second));
+patch().first(jar(base)).delta(jar(delta)).to(jar(update));
 ```
 
 ### Diffing two ZIP files and computing a delta model
@@ -90,9 +88,9 @@ import global.namespace.archive.io.delta.model.*;
 import static global.namespace.archive.io.delta.Delta.*;
 import static global.namespace.archive.io.juz.JUZ.*;
 
-File first = ...;
-File second = ...;
-DeltaModel model = diff().first(zip(first)).second(zip(second)).deltaModel();
+File base = ...;
+File update = ...;
+DeltaModel model = diff().first(zip(base)).second(zip(update)).deltaModel();
 ```
 
 The delta model has properties describing the changed, unchanged, added and removed entries.
