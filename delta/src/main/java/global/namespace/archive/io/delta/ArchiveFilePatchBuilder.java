@@ -20,10 +20,10 @@ public class ArchiveFilePatchBuilder {
     ArchiveFilePatchBuilder() { }
 
     /**
-     * Returns this archive file patch builder with the given source for reading the first archive file.
+     * Returns this archive file patch builder with the given source for reading the base archive file.
      * This is an alias for {@link #base(ArchiveFileSource)}.
      */
-    public ArchiveFilePatchBuilder first(ArchiveFileSource<?> first) { return base(first); }
+    public ArchiveFilePatchBuilder first(ArchiveFileSource<?> base) { return base(base); }
 
     /** Returns this archive file patch builder with the given source for reading the base archive file. */
     public ArchiveFilePatchBuilder base(final ArchiveFileSource<?> base) {
@@ -37,7 +37,7 @@ public class ArchiveFilePatchBuilder {
         return this;
     }
 
-    /** Writes the second archive file computed from the first and delta archive file to the given sink. */
+    /** Writes the update archive file computed from the base and delta archive file to the given sink. */
     @SuppressWarnings("unchecked")
     public void to(ArchiveFileSink<?> update) throws Exception { build().to(update); }
 

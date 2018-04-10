@@ -25,7 +25,7 @@ class ArchiveFileDiffAndPatchSpec extends WordSpec {
   "An archive file diff" should {
     "correctly partition the entry names and digests" in {
       forAllArchives { (a, b) => { _ =>
-        val model = (diff base a update b digest sha1).deltaModel
+        val model = (diff base a update b digest sha1).toModel
         import model._
         changedEntries.asScala map (_.name) shouldBe List("differentEntrySize")
         addedEntries.asScala map (_.name) shouldBe List("entryOnlyInFile2")
@@ -48,7 +48,7 @@ class ArchiveFileDiffAndPatchSpec extends WordSpec {
               b applyReader (_.asScala.filter(!_.isDirectory).map(_.name).toList)
             }
 
-            val model = (diff base b update b2 digest sha1).deltaModel
+            val model = (diff base b update b2 digest sha1).toModel
             model.changedEntries shouldBe empty
             model.addedEntries shouldBe empty
             model.removedEntries shouldBe empty

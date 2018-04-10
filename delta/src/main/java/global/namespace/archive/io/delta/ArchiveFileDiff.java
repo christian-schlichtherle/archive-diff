@@ -33,14 +33,14 @@ abstract class ArchiveFileDiff<F, S, D> {
 
     abstract ArchiveFileSource<S> updateSource();
 
+    DeltaModel toModel() throws Exception { return apply(Engine::toModel); }
+
     void to(ArchiveFileSink<D> delta) throws Exception {
         apply(engine -> {
             delta.acceptWriter(engine::to);
             return null;
         });
     }
-
-    DeltaModel deltaModel() throws Exception { return apply(Engine::deltaModel); }
 
     private <T> T apply(XFunction<Engine, T> function) throws Exception {
         return baseSource().applyReader(baseInput -> updateSource().applyReader(updateInput -> function.apply(
@@ -59,32 +59,7 @@ abstract class ArchiveFileDiff<F, S, D> {
 
         abstract ArchiveFileInput<S> updateInput();
 
-        void to(final ArchiveFileOutput<D> deltaOutput) throws Exception {
-
-            final class Streamer {
-
-                private final DeltaModel model = deltaModel();
-
-                private Streamer() throws Exception { encodeModel(deltaOutput, model); }
-
-                private void stream() throws Exception {
-                    for (final ArchiveEntrySource<S> updateEntry : updateInput()) {
-                        final String name = updateEntry.name();
-                        if (changedOrAdded(name)) {
-                            updateEntry.copyTo(deltaOutput.sink(name));
-                        }
-                    }
-                }
-
-                private boolean changedOrAdded(String name) {
-                    return null != model.changed(name) || null != model.added(name);
-                }
-            }
-
-            new Streamer().stream();
-        }
-
-        DeltaModel deltaModel() throws Exception { return new Assembler().walkAndReturn(new Assembly()).deltaModel(); }
+        DeltaModel toModel() throws Exception { return new Assembler().walkAndReturn(new Assembly()).deltaModel(); }
 
         class Assembler {
 
@@ -191,6 +166,31 @@ abstract class ArchiveFileDiff<F, S, D> {
                 updateDigestFrom(digest, source);
                 return valueOf(digest);
             }
+        }
+
+        void to(final ArchiveFileOutput<D> deltaOutput) throws Exception {
+
+            final class Streamer {
+
+                private final DeltaModel model = toModel();
+
+                private Streamer() throws Exception { encodeModel(deltaOutput, model); }
+
+                private void stream() throws Exception {
+                    for (final ArchiveEntrySource<S> updateEntry : updateInput()) {
+                        final String name = updateEntry.name();
+                        if (changedOrAdded(name)) {
+                            updateEntry.copyTo(deltaOutput.sink(name));
+                        }
+                    }
+                }
+
+                private boolean changedOrAdded(String name) {
+                    return null != model.changed(name) || null != model.added(name);
+                }
+            }
+
+            new Streamer().stream();
         }
     }
 }

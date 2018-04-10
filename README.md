@@ -90,7 +90,7 @@ import static global.namespace.archive.io.juz.JUZ.*;
 
 File base = ...;
 File update = ...;
-DeltaModel model = diff().base(zip(base)).update(zip(update)).deltaModel();
+DeltaModel model = diff().base(zip(base)).update(zip(update)).toModel();
 ```
 
 The delta model has properties describing the changed, unchanged, added and removed entries.
