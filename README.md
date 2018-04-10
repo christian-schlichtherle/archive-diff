@@ -1,24 +1,47 @@
-# Archive I/O [![Maven Central](https://img.shields.io/maven-central/v/global.namespace.archive-diff/archive-diff.svg)](http://search.maven.org/#search%7Cga%7C1%7Cg%3A%22global.namespace.archive-diff%22) [![Build Status](https://api.travis-ci.org/christian-schlichtherle/archive-diff.svg)](https://travis-ci.org/christian-schlichtherle/archive-diff)
+# Archive I/O [![Maven Central](https://img.shields.io/maven-central/v/global.namespace.archive-io/archive-io.svg)](http://search.maven.org/#search%7Cga%7C1%7Cg%3A%22global.namespace.archive-io%22) [![Build Status](https://api.travis-ci.org/christian-schlichtherle/archive-io.svg)](https://travis-ci.org/christian-schlichtherle/archive-io)
 
 This library features diffing and patching of archive files like EAR, JAR, WAR, ZIP et al.
 
 ## Features
 
-Archive I/O provides:
+Archive I/O features:
 
 + An API for transparent access to archive files which is based on the API of [Fun I/O].
-+ A facade for accessing JAR and ZIP files using [Apache Commons Compress].
-+ Another facade for accessing JAR and ZIP files using `java.util.jar` and `java.util.zip`.
-+ A facade for diffing two archive files and generating a delta archive file.
-+ A facade for patching an archive file from a generated delta archive file to another archive file.
++ A facade for accessing JAR and ZIP files which depends on [Apache Commons Compress].
++ Another facade for accessing JAR and ZIP files which depends on `java.util.jar` and `java.util.zip`.
++ A facade for diffing and patching archive files.
+
+## Structure
+
+Archive I/O has a modular structure and its artifacts are hosted on Maven Central with the common group ID
+`global.namespace.archive-io`.
+The following diagram shows the module structure:
+
+[![Module Structure](module-structure.svg)]
+
+The modules are:
+
++ `archive-io-api`: Provides the API for accessing archive files.
+  The base package of this module is `global.namespace.archive.io.api`.
++ `archive-io-commons-compress`: Implements the API and provides a facade for accessing JAR and ZIP files.
+  This module depends on Apache Commons Compress and provides best performance for diffing and patching.
+  The base package of this module is `global.namespace.archive.io.commons.compress`.
++ `archive-io-juz`: Implements the API and provides a facade for accessing JAR and ZIP files.
+  This module depends on the packages `java.util.jar` and `java.util.zip` (not shown).
+  The base package of this module is `global.namespace.archive.io.juz`.
++ `archive-io-delta`: Provides a facade for diffing and patching archive files.
+  The base package of this module is `global.namespace.archive.io.delta`.
+
+Thus, for diffing and patching, your application needs to depend on the modules `archive-io-delta` and either
+`archive-io-commons-compress` or `archive-io-juz`.
 
 ## Usage
 
 ### Diffing two JAR files and generating a delta JAR file
 
-The following code diffs to JAR files and generates a delta JAR file.
-It uses the facade of the `Compress` class to access the JAR files using Apache Commons Compress.
-It also uses the facade of the `Delta` class for the actual diffing.
+The following code diffs two JAR files and generates a delta JAR file.
+It uses the `Compress` facade to access the JAR files using Apache Commons Compress.
+It also uses the `Delta` facade for the actual diffing.
 
 ```java
 import java.io.File;
@@ -32,11 +55,14 @@ File delta = ...;
 diff().first(jar(first)).second(jar(second)).to(jar(delta));
 ```
 
-### Patching a JAR file from a generated delta JAR file to another JAR file
+If you wanted to use the `archive-io-juz` module instead of the `archive-io-commons-compress` module, then, apart from
+configuring the class path, you would only have to edit the `import` statement as shown in the next example.
 
-The following code patches a JAR file from a generated JAR file to another JAR file.
-It uses the facade of the `JUZ` class to access the JAR files using `java.util.jar`.
-It also uses the facade of the `Delta` class for the actual patching.
+### Patching a JAR file from a delta JAR file to another JAR file
+
+The following code patches a JAR file from a delta JAR file to another JAR file.
+It uses the `JUZ` facade to access the JAR files using `java.util.jar`.
+It also uses the `Delta` facade for the actual patching.
 
 ```java
 import java.io.File;
@@ -52,8 +78,9 @@ patch().first(jar(first)).delta(jar(delta)).to(jar(second));
 
 ### Diffing two ZIP files and computing a delta model
 
-Maybe you just want to explore the differences, but not generate a delta archive file?
-Again, the facades of the `JUZ` (or `Compress`) and `Delta` classes can be used to do that:
+Maybe you just want to explore the delta of two archive files, but not generate another archive file from that?
+The following code diffs two ZIP files and computes a delta model.
+Again, the `Delta` and either the `JUZ` or `Compress` facades can be used to do that:
 
 ```java
 import java.io.File;
@@ -67,6 +94,8 @@ File first = ...;
 File second = ...;
 DeltaModel model = diff().first(zip(first)).second(zip(second)).deltaModel();
 ```
+
+The delta model has properties describing the changed, unchanged, added and removed entries.
 
 [Apache Commons Compress]: https://commons.apache.org/proper/commons-compress/
 [Fun I/O]: https://github.com/christian-schlichtherle/fun-io
