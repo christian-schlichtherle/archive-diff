@@ -64,7 +64,7 @@ object BuildSettings {
         </developers>
         <issueManagement>
           <system>Github</system>
-          <url>https://github.com/christian-schlichtherle/fun-io/issues</url>
+          <url>https://github.com/christian-schlichtherle/archive-io/issues</url>
         </issueManagement>
       },
       pomIncludeRepository := (_ => false),
@@ -80,8 +80,8 @@ object BuildSettings {
       },
       scmInfo := Some(ScmInfo(
         browseUrl = url("https://github.com/christian-schlichtherle/archive-io"),
-        connection = "scm:git:https://github.com/christian-schlichtherle/archive-io.git",
-        devConnection = Some("scm:git:https://github.com/christian-schlichtherle/archive-io.git")
+        connection = "scm:git:git@github.com:christian-schlichtherle/archive-io.git",
+        devConnection = Some("scm:git:git@github.com:christian-schlichtherle/archive-io.git")
       ))
     )
   }
