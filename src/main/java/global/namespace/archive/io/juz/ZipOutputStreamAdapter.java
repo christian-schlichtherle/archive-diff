@@ -5,14 +5,12 @@
 package global.namespace.archive.io.juz;
 
 import global.namespace.archive.io.api.ArchiveEntrySink;
-import global.namespace.archive.io.api.ArchiveEntrySource;
 import global.namespace.archive.io.api.ArchiveFileOutput;
 import global.namespace.fun.io.api.Socket;
 
 import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -24,9 +22,6 @@ import static java.util.Objects.requireNonNull;
  * @author Christian Schlichtherle
  */
 class ZipOutputStreamAdapter implements ArchiveFileOutput<ZipEntry> {
-
-    private static final Pattern COMPRESSED_FILE_EXTENSIONS =
-            Pattern.compile(".*\\.(ear|jar|war|zip|gz|xz)", Pattern.CASE_INSENSITIVE);
 
     private final ZipOutputStream zip;
 
@@ -45,20 +40,6 @@ class ZipOutputStreamAdapter implements ArchiveFileOutput<ZipEntry> {
             public boolean isDirectory() { return entry.isDirectory(); }
 
             public ZipEntry entry() { return entry; }
-
-            public Socket<OutputStream> output(final ArchiveEntrySource<?> source) {
-                // TODO: This should be deferred until the underlying socket is used to create an output stream.
-                if (source.entry() instanceof ZipEntry && COMPRESSED_FILE_EXTENSIONS.matcher(source.name()).matches()) {
-                    final ZipEntry origin = (ZipEntry) source.entry();
-                    final long size = origin.getSize();
-
-                    entry.setMethod(ZipOutputStream.STORED);
-                    entry.setSize(size);
-                    entry.setCompressedSize(size);
-                    entry.setCrc(origin.getCrc());
-                }
-                return output();
-            }
 
             public Socket<OutputStream> output() {
                 return () -> {

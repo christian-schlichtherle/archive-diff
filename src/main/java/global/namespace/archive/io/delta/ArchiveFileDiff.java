@@ -19,7 +19,6 @@ import java.util.TreeMap;
 import static global.namespace.archive.io.delta.Delta.encodeModel;
 import static global.namespace.archive.io.delta.MessageDigests.updateDigestFrom;
 import static global.namespace.archive.io.delta.MessageDigests.valueOf;
-import static global.namespace.fun.io.bios.BIOS.copy;
 
 /**
  * Compares a first archive file to a second archive file and generates a delta archive file.
@@ -72,8 +71,7 @@ abstract class ArchiveFileDiff<F, S, D> {
                     for (final ArchiveEntrySource<S> secondEntry : secondInput()) {
                         final String name = secondEntry.name();
                         if (changedOrAdded(name)) {
-                            final ArchiveEntryChannel channel = secondEntry.connect(deltaOutput.sink(name));
-                            copy(channel.source(), channel.sink());
+                            secondEntry.copyTo(deltaOutput.sink(name));
                         }
                     }
                 }

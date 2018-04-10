@@ -17,6 +17,7 @@ import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.Optional;
 
+import static global.namespace.fun.io.bios.BIOS.copy;
 import static java.util.Objects.requireNonNull;
 
 /**
@@ -46,7 +47,7 @@ final class ZipFileAdapter implements ArchiveFileInput<ZipArchiveEntry> {
     }
 
     private ArchiveEntrySource<ZipArchiveEntry> source(ZipArchiveEntry entry) {
-        return new ArchiveEntrySource<ZipArchiveEntry>() {
+        return new ZipArchiveEntrySource() {
 
             public String name() { return entry.getName(); }
 
@@ -54,9 +55,21 @@ final class ZipFileAdapter implements ArchiveFileInput<ZipArchiveEntry> {
 
             public ZipArchiveEntry entry() { return entry; }
 
-            public Socket<InputStream> input(ArchiveEntrySink<?> sink) { return input(); }
-
             public Socket<InputStream> input() { return () -> zip.getInputStream(entry); }
+
+            Socket<InputStream> rawInput() { return () -> zip.getRawInputStream(entry); }
+
+            public void copyTo(final ArchiveEntrySink<?> sink) throws Exception {
+                if (sink instanceof ZipArchiveEntrySink) {
+                    copyTo((ZipArchiveEntrySink) sink);
+                } else {
+                    copy(this, sink);
+                }
+            }
+
+            void copyTo(ZipArchiveEntrySink sink) throws Exception {
+                sink.copyFrom(this);
+            }
         };
     }
 

@@ -17,6 +17,7 @@ import java.util.Optional;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
+import static global.namespace.fun.io.bios.BIOS.copy;
 import static java.util.Objects.requireNonNull;
 
 /**
@@ -56,9 +57,9 @@ final class ZipFileAdapter implements ArchiveFileInput<ZipEntry> {
 
             public ZipEntry entry() { return entry; }
 
-            public Socket<InputStream> input(ArchiveEntrySink<?> sink) { return input(); }
-
             public Socket<InputStream> input() { return () -> zip.getInputStream(entry); }
+
+            public void copyTo(ArchiveEntrySink<?> sink) throws Exception { copy(this, sink); }
         };
     }
 
