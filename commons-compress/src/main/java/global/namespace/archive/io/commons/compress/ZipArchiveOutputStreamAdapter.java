@@ -33,7 +33,7 @@ class ZipArchiveOutputStreamAdapter implements ArchiveFileOutput<ZipArchiveEntry
 
     public ArchiveEntrySink<ZipArchiveEntry> sink(String name) { return sink(new ZipArchiveEntry(name)); }
 
-    ArchiveEntrySink<ZipArchiveEntry> sink(ZipArchiveEntry entry) {
+    ZipArchiveEntrySink sink(ZipArchiveEntry entry) {
         return new ZipArchiveEntrySink() {
 
             public String name() { return entry.getName(); }

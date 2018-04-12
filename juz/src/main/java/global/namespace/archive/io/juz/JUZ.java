@@ -33,9 +33,7 @@ public class JUZ {
         return new ArchiveFileStore<ZipEntry>() {
 
             @Override
-            public Socket<ArchiveFileInput<ZipEntry>> input() {
-                return () -> new ZipFileAdapter(new ZipFile(file));
-            }
+            public Socket<ArchiveFileInput<ZipEntry>> input() { return () -> new ZipFileAdapter(new ZipFile(file)); }
 
             @Override
             public Socket<ArchiveFileOutput<ZipEntry>> output() {
@@ -50,9 +48,7 @@ public class JUZ {
         return new ArchiveFileStore<ZipEntry>() {
 
             @Override
-            public Socket<ArchiveFileInput<ZipEntry>> input() {
-                return () -> new ZipFileAdapter(new ZipFile(file));
-            }
+            public Socket<ArchiveFileInput<ZipEntry>> input() { return () -> new ZipFileAdapter(new ZipFile(file)); }
 
             @Override
             public Socket<ArchiveFileOutput<ZipEntry>> output() {

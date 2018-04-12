@@ -23,7 +23,9 @@ public interface ArchiveFileSource<E> {
      * Loans an archive file input from the underlying {@linkplain #input() socket} to the given consumer.
      * The archive file input will be closed upon return from this method.
      */
-    default void acceptReader(XConsumer<? super ArchiveFileInput<E>> reader) throws Exception { input().accept(reader); }
+    default void acceptReader(XConsumer<? super ArchiveFileInput<E>> reader) throws Exception {
+        input().accept(reader);
+    }
 
     /**
      * Loans an archive file input from the underlying {@linkplain #input() socket} to the given function

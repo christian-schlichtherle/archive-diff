@@ -27,10 +27,10 @@ class ArchiveFileDiffAndPatchSpec extends WordSpec {
       forAllArchives { (a, b) => { _ =>
         val model = (diff base a update b digest sha1).toModel
         import model._
-        changedEntries.asScala map (_.name) shouldBe List("differentEntrySize")
-        addedEntries.asScala map (_.name) shouldBe List("entryOnlyInFile2")
-        removedEntries.asScala map (_.name) shouldBe List("entryOnlyInFile1")
-        unchangedEntries.asScala map (_.name) shouldBe List("META-INF/MANIFEST.MF", "differentEntryTime", "equalEntry")
+        changedEntries.asScala.map(_.name) shouldBe List("differentEntrySize")
+        addedEntries.asScala.map(_.name) shouldBe List("entryOnlyInFile2")
+        removedEntries.asScala.map(_.name) shouldBe List("entryOnlyInFile1")
+        unchangedEntries.asScala.map(_.name) shouldBe List("META-INF/MANIFEST.MF", "differentEntryTime", "equalEntry")
       }}
     }
   }
@@ -45,14 +45,14 @@ class ArchiveFileDiffAndPatchSpec extends WordSpec {
             patch base a delta c to b2
 
             val unchangedReference: List[String] = {
-              b applyReader (_.asScala.filter(!_.isDirectory).map(_.name).toList)
+              b.applyReader(_.asScala.filter(!_.isDirectory).map(_.name).toList)
             }
 
             val model = (diff base b update b2 digest sha1).toModel
             model.changedEntries shouldBe empty
             model.addedEntries shouldBe empty
             model.removedEntries shouldBe empty
-            model.unchangedEntries.asScala map (_.name) shouldBe unchangedReference
+            model.unchangedEntries.asScala.map(_.name) shouldBe unchangedReference
           }
         }
       }}

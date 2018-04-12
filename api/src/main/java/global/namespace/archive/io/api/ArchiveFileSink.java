@@ -23,7 +23,9 @@ public interface ArchiveFileSink<E> {
      * Loans an archive file output from the underlying {@linkplain #output() socket} to the given consumer.
      * The archive file output will be closed upon return from this method.
      */
-    default void acceptWriter(XConsumer<? super ArchiveFileOutput<E>> writer) throws Exception { output().accept(writer); }
+    default void acceptWriter(XConsumer<? super ArchiveFileOutput<E>> writer) throws Exception {
+        output().accept(writer);
+    }
 
     /**
      * Loans an archive file output from the underlying {@linkplain #output() socket} to the given function

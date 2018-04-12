@@ -46,7 +46,7 @@ final class ZipFileAdapter implements ArchiveFileInput<ZipArchiveEntry> {
         return Optional.ofNullable(zip.getEntry(name)).map(this::source);
     }
 
-    private ArchiveEntrySource<ZipArchiveEntry> source(ZipArchiveEntry entry) {
+    private ZipArchiveEntrySource source(ZipArchiveEntry entry) {
         return new ZipArchiveEntrySource() {
 
             public String name() { return entry.getName(); }
