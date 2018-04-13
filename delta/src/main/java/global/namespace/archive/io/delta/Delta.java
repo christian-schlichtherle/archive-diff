@@ -17,7 +17,6 @@ import global.namespace.archive.io.delta.model.EntryNameAndTwoDigestValues;
 import global.namespace.fun.io.api.Codec;
 import global.namespace.fun.io.api.Sink;
 import global.namespace.fun.io.api.Source;
-import global.namespace.fun.io.jackson.Jackson;
 
 import java.security.MessageDigest;
 import java.util.Arrays;
@@ -25,6 +24,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static global.namespace.fun.io.jackson.Jackson.json;
 import static java.util.Collections.emptyList;
 
 /**
@@ -71,7 +71,7 @@ public class Delta {
     private static Codec jsonCodec() {
         final ObjectMapper mapper = new ObjectMapper();
         mapper.setSerializationInclusion(JsonInclude.Include.NON_DEFAULT);
-        return Jackson.jsonCodec(mapper);
+        return json(mapper);
     }
 
     private static DeltaDTO marshal(final DeltaModel model) {

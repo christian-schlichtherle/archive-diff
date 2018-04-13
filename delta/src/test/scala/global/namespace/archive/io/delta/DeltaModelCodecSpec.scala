@@ -11,7 +11,7 @@ import global.namespace.archive.io.delta.Delta._
 import global.namespace.archive.io.delta.DeltaModelCodecSpec._
 import global.namespace.archive.io.delta.model.{DeltaModel, EntryNameAndDigestValue, EntryNameAndTwoDigestValues}
 import global.namespace.fun.io.api.Store
-import global.namespace.fun.io.bios.BIOS.memoryStore
+import global.namespace.fun.io.bios.BIOS.memory
 import org.scalatest.Matchers._
 import org.scalatest.WordSpec
 import org.scalatest.prop.PropertyChecks._
@@ -25,7 +25,7 @@ class DeltaModelCodecSpec extends WordSpec {
     "support round-trip encoding/decoding to/from JSON" in {
       forAll(TestCases) { (builder, json) =>
         val original = (builder messageDigest sha1).build
-        val store = memoryStore
+        val store = memory
         encodeModel(store, original)
         utf8String(store) shouldBe json
         val clone = decodeModel(store)

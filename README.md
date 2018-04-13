@@ -1,6 +1,6 @@
 # Archive I/O [![Maven Central](https://img.shields.io/maven-central/v/global.namespace.archive-io/archive-io-api.svg)](http://search.maven.org/#search%7Cga%7C1%7Cg%3A%22global.namespace.archive-io%22) [![Build Status](https://api.travis-ci.org/christian-schlichtherle/archive-io.svg)](https://travis-ci.org/christian-schlichtherle/archive-io)
 
-This library features diffing and patching of archive files like EAR, JAR, WAR, ZIP et al.
+Archive I/O features diffing and patching of archive files like EAR, JAR, WAR, ZIP et al or directories.
 
 ## Features
 
@@ -8,30 +8,6 @@ This library features diffing and patching of archive files like EAR, JAR, WAR, 
 + A facade for accessing JAR and ZIP files which depends on [Apache Commons Compress].
 + Another facade for accessing JAR and ZIP files which depends on the Java Runtime Environment (JRE) only.
 + A facade for diffing and patching archive files or directories.
-
-## Structure
-
-Archive I/O has a modular structure.
-Its artifacts are hosted on Maven Central with the common group ID `global.namespace.archive-io`.
-The following diagram shows the module structure:
-
-![Module Structure](module-structure.svg)
-
-The modules are:
-
-+ `archive-io-api`: Provides an API for accessing archive files.
-  The base package of this module is `global.namespace.archive.io.api`.
-+ `archive-io-bios`: Implements the API and provides a facade for accessing directories, JAR and ZIP files.
-  This module depends on packages of the JRE only (not shown).
-  The base package of this module is `global.namespace.archive.io.bios`.
-+ `archive-io-commons-compress`: Implements the API and provides a facade for accessing JAR and ZIP files.
-  This module depends on Apache Commons Compress and provides best performance for diffing and patching.
-  The base package of this module is `global.namespace.archive.io.commons.compress`.
-+ `archive-io-delta`: Provides a facade for diffing and patching archive files or directories.
-  The base package of this module is `global.namespace.archive.io.delta`.
-
-Thus, for diffing and patching, your application needs to depend on the modules `archive-io-delta` and either
-`archive-io-commons-compress` or `archive-io-bios`.
 
 ## Usage
 
@@ -44,7 +20,7 @@ It also uses the `Delta` facade for the actual diffing:
 ```java
 import java.io.File;
 
-import static global.namespace.archive.io.commons.compress.Compress.*;
+import static global.namespace.archive.io.commons.compress.CommonsCompress.*;
 import static global.namespace.archive.io.delta.Delta.*;
 
 File base = ...;
@@ -95,6 +71,31 @@ DeltaModel model = diff().base(directory(base)).update(directory(update)).toMode
 ```
 
 The delta model has properties describing the changed, unchanged, added and removed entries.
+
+## Module Structure
+
+Archive I/O has a modular structure.
+Its artifacts are hosted on Maven Central with the common group ID 
+[`global.namespace.archive-io`](http://search.maven.org/#search%7Cga%7C1%7Cglobal.namespace.archive-io).
+The following diagram shows the module structure:
+
+![Module Structure](module-structure.svg)
+
+The modules are:
+
++ `archive-io-api`: Provides an API for accessing archive files.
+  The base package of this module is `global.namespace.archive.io.api`.
++ `archive-io-bios`: Implements the API and provides a facade for accessing directories, JAR and ZIP files.
+  This module depends on packages of the JRE only (not shown).
+  The base package of this module is `global.namespace.archive.io.bios`.
++ `archive-io-commons-compress`: Implements the API and provides a facade for accessing JAR and ZIP files.
+  This module depends on Apache Commons Compress and provides best performance for diffing and patching.
+  The base package of this module is `global.namespace.archive.io.commons.compress`.
++ `archive-io-delta`: Provides a facade for diffing and patching archive files or directories.
+  The base package of this module is `global.namespace.archive.io.delta`.
+
+Thus, for diffing and patching, your application needs to depend on the modules `archive-io-delta` and either
+`archive-io-commons-compress` or `archive-io-bios`.
 
 [Apache Commons Compress]: https://commons.apache.org/proper/commons-compress/
 [Fun I/O]: https://github.com/christian-schlichtherle/fun-io

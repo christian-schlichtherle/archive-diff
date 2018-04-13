@@ -17,7 +17,7 @@ import sbt._
 
 object Dependencies {
 
-  private val FunIoVersion = "0.9.4"
+  private val FunIoVersion = "0.10.0"
 
   val CommonsCompress: ModuleID = "org.apache.commons" % "commons-compress" % "1.16.1"
   val FunIoApi: ModuleID = "global.namespace.fun-io" % "fun-io-api" % FunIoVersion
