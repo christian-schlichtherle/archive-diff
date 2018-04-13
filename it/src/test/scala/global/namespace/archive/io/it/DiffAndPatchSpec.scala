@@ -10,7 +10,7 @@ import java.security.MessageDigest
 import global.namespace.archive.io.api.{ArchiveFileSource, ArchiveFileStore}
 import global.namespace.archive.io.bios.BIOS
 import global.namespace.archive.io.bios.BIOS._
-import global.namespace.archive.io.commons.compress.Compress
+import global.namespace.archive.io.commons.compress.CommonsCompress
 import global.namespace.archive.io.delta.Delta._
 import global.namespace.archive.io.delta.dto.DeltaDTO
 import global.namespace.archive.io.delta.model.DeltaModel
@@ -57,8 +57,8 @@ private object DiffAndPatchSpec {
 
   private val Factories: TableFor1[ArchiveFileStoreFactory[_]] = Table(
     "archive file store factory",
-    Compress.jar,
-    Compress.zip,
+    CommonsCompress.jar,
+    CommonsCompress.zip,
     BIOS.jar,
     BIOS.zip
   )

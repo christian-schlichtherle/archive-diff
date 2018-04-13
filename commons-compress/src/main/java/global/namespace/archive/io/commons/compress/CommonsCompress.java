@@ -24,9 +24,9 @@ import static java.util.Objects.requireNonNull;
  *
  * @author Christian Schlichtherle
  */
-public class Compress {
+public class CommonsCompress {
 
-    private Compress() { }
+    private CommonsCompress() { }
 
     /** Returns an archive file store for the given JAR file. */
     public static ArchiveFileStore<ZipArchiveEntry> jar(final File file) {
