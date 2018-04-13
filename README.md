@@ -94,8 +94,8 @@ The modules are:
 + `archive-io-delta`: Provides a facade for diffing and patching archive files or directories.
   The base package of this module is `global.namespace.archive.io.delta`.
 
-Thus, for diffing and patching, your application needs to depend on the modules `archive-io-delta` and either
-`archive-io-commons-compress` or `archive-io-bios`.
+Thus, for diffing and patching, a typical application depends on the modules `archive-io-delta` and either
+`archive-io-bios` or `archive-io-commons-compress`.
 
 [Apache Commons Compress]: https://commons.apache.org/proper/commons-compress/
 [Fun I/O]: https://github.com/christian-schlichtherle/fun-io
