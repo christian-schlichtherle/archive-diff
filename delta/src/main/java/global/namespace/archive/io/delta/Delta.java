@@ -74,71 +74,71 @@ public class Delta {
         return Jackson.jsonCodec(mapper);
     }
 
-    private static DeltaDTO marshal(final DeltaModel v) {
-        if (null == v) {
+    private static DeltaDTO marshal(final DeltaModel model) {
+        if (null == model) {
             return null;
         } else {
             final DeltaDTO dto = new DeltaDTO();
-            dto.algorithm = v.digestAlgorithmName();
-            dto.numBytes = v.digestByteLength().orElse(0);
-            dto.changed = marshal2(v.changedEntries());
-            dto.unchanged = marshal(v.unchangedEntries());
-            dto.added = marshal(v.addedEntries());
-            dto.removed = marshal(v.removedEntries());
+            dto.algorithm = model.digestAlgorithmName();
+            dto.numBytes = model.digestByteLength().orElse(0);
+            dto.changed = marshal2(model.changedEntries());
+            dto.unchanged = marshal(model.unchangedEntries());
+            dto.added = marshal(model.addedEntries());
+            dto.removed = marshal(model.removedEntries());
             return dto;
         }
     }
 
-    private static DeltaModel unmarshal(final DeltaDTO v) throws Exception {
-        if (null == v) {
+    private static DeltaModel unmarshal(final DeltaDTO dto) throws Exception {
+        if (null == dto) {
             return null;
         } else {
             return DeltaModel
                     .builder()
-                    .messageDigest(MessageDigest.getInstance(v.algorithm))
-                    .changedEntries(unmarshal2(v.changed))
-                    .unchangedEntries(unmarshal(v.unchanged))
-                    .addedEntries(unmarshal(v.added))
-                    .removedEntries(unmarshal(v.removed))
+                    .messageDigest(MessageDigest.getInstance(dto.algorithm))
+                    .changedEntries(unmarshal2(dto.changed))
+                    .unchangedEntries(unmarshal(dto.unchanged))
+                    .addedEntries(unmarshal(dto.added))
+                    .removedEntries(unmarshal(dto.removed))
                     .build();
         }
     }
 
-    private static EntryNameAndTwoDigestValuesDTO[] marshal2(final Collection<EntryNameAndTwoDigestValues> v) {
-        if (null == v || v.isEmpty()) {
+    private static EntryNameAndTwoDigestValuesDTO[] marshal2(final Collection<EntryNameAndTwoDigestValues> c) {
+        if (null == c || c.isEmpty()) {
             return null;
         } else {
-            return v.stream().map(entry -> {
+            return c.stream().map(values -> {
                 final EntryNameAndTwoDigestValuesDTO dto = new EntryNameAndTwoDigestValuesDTO();
-                dto.name = entry.name();
-                dto.first = entry.baseDigestValue();
-                dto.second = entry.updateDigestValue();
+                dto.name = values.name();
+                dto.first = values.baseDigestValue();
+                dto.second = values.updateDigestValue();
                 return dto;
             }).toArray(EntryNameAndTwoDigestValuesDTO[]::new);
         }
     }
 
-    private static List<EntryNameAndTwoDigestValues> unmarshal2(EntryNameAndTwoDigestValuesDTO[] v) {
-        return null == v ? emptyList() : Arrays.stream(v)
+    private static List<EntryNameAndTwoDigestValues> unmarshal2(EntryNameAndTwoDigestValuesDTO[] c) {
+        return null == c ? emptyList() : Arrays.stream(c)
                 .map(dto -> new EntryNameAndTwoDigestValues(dto.name, dto.first, dto.second))
                 .collect(Collectors.toList());
     }
 
-    private static EntryNameAndDigestValueDTO[] marshal(final Collection<EntryNameAndDigestValue> v) {
-        if (null == v || v.isEmpty()) {
+    private static EntryNameAndDigestValueDTO[] marshal(final Collection<EntryNameAndDigestValue> c) {
+        if (null == c || c.isEmpty()) {
             return null;
         } else {
-            return v.stream().map(entry -> {
+            return c.stream().map(value -> {
                 final EntryNameAndDigestValueDTO dto = new EntryNameAndDigestValueDTO();
-                dto.name = entry.name();
-                dto.digest = entry.digestValue();
+                dto.name = value.name();
+                dto.digest = value.digestValue();
                 return dto;
             }).toArray(EntryNameAndDigestValueDTO[]::new);
         }
     }
 
-    private static List<EntryNameAndDigestValue> unmarshal(EntryNameAndDigestValueDTO[] v) {
-        return null == v ? emptyList() : Arrays.stream(v)
+    private static List<EntryNameAndDigestValue> unmarshal(EntryNameAndDigestValueDTO[] c) {
+        return null == c ? emptyList() : Arrays.stream(c)
                 .map(dto -> new EntryNameAndDigestValue(dto.name, dto.digest))
                 .collect(Collectors.toList());
     }
