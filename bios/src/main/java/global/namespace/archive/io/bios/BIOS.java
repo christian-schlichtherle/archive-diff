@@ -31,12 +31,12 @@ public class BIOS {
     private BIOS() { }
 
     /** Returns an archive file store for the given directory. */
+    public static ArchiveFileStore<Path> directory(File directory) { return directory(directory.toPath()); }
+
+    /** Returns an archive file store for the given directory. */
     public static ArchiveFileStore<Path> directory(Path directory) {
         return new DirectoryStore(requireNonNull(directory));
     }
-
-    /** Returns an archive file store for the given directory. */
-    public static ArchiveFileStore<Path> directory(File directory) { return directory(directory.toPath()); }
 
     /** Returns an archive file store for the given JAR file. */
     public static ArchiveFileStore<ZipEntry> jar(final File file) {
