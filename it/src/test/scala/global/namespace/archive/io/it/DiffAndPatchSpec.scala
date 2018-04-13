@@ -10,6 +10,9 @@ import java.security.MessageDigest
 import global.namespace.archive.io.api.{ArchiveFileSource, ArchiveFileStore}
 import global.namespace.archive.io.commons.compress.Compress
 import global.namespace.archive.io.delta.Delta._
+import global.namespace.archive.io.delta.dto.DeltaDTO
+import global.namespace.archive.io.delta.model.DeltaModel
+import global.namespace.archive.io.dir.Dir
 import global.namespace.archive.io.it.DiffAndPatchSpec._
 import global.namespace.archive.io.juz.JUZ
 import org.scalatest.Matchers._
@@ -30,15 +33,13 @@ class DiffAndPatchSpec extends WordSpec {
           diff first first second second digest sha1 to delta
           patch base first delta delta to clone
 
-          val secondEntries: Seq[String] = {
-            second.applyReader(_.asScala.filter(!_.isDirectory).map(_.name).toSeq)
-          }
+          val secondEntries: Set[String] = second.applyReader(_.asScala.filterNot(_.isDirectory).map(_.name).toSet)
 
           val model = (diff base second update clone digest md5).toModel
           model.changedEntries shouldBe empty
           model.addedEntries shouldBe empty
           model.removedEntries shouldBe empty
-          model.unchangedEntries.asScala.map(_.name) shouldBe secondEntries
+          model.unchangedEntries.asScala.map(_.name).toSet shouldBe secondEntries
         }}
       }}
     }
@@ -50,15 +51,16 @@ private object DiffAndPatchSpec {
   type ArchiveFileStoreFactory[E] = File => ArchiveFileStore[E]
 
   def forAllArchiveFiles(test: (ArchiveFileSource[_], ArchiveFileSource[_]) => ArchiveFileStoreFactory[_] => Any): Unit = {
+    test(Dir.dir(deltaModelDirectory), Dir.dir(deltaDtoDirectory))(Dir.dir)
     forAll(Factories)(factory => test(factory(Test1JarFile), factory(Test2JarFile))(factory))
   }
 
-  val Factories: TableFor1[ArchiveFileStoreFactory[_]] = Table(
+  private val Factories: TableFor1[ArchiveFileStoreFactory[_]] = Table(
     "archive file store factory",
-    Compress.jar _,
-    Compress.zip _,
-    JUZ.jar _,
-    JUZ.zip _
+    Compress.jar,
+    Compress.zip,
+    JUZ.jar,
+    JUZ.zip
   )
 
   def withTempArchiveFile(test: ArchiveFileStore[_] => Any)(implicit factory: ArchiveFileStoreFactory[_]): Unit = {
@@ -77,6 +79,10 @@ private object DiffAndPatchSpec {
     }
     file delete ()
   }
+
+  private lazy val deltaModelDirectory = new File((classOf[DeltaModel] getResource "").toURI)
+
+  private lazy val deltaDtoDirectory = new File((classOf[DeltaDTO] getResource "").toURI)
 
   private lazy val Test1JarFile = resourceFile("test1.jar")
 
