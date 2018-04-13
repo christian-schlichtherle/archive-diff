@@ -25,6 +25,20 @@ class DeltaModelCodecSpec extends WordSpec {
     "support round-trip encoding/decoding to/from JSON" in {
       forAll(TestCases) { (builder, json) =>
         val original = (builder messageDigest sha1).build
+
+        original.changedEntries.asScala foreach { entry =>
+          original changed entry.name shouldBe entry
+        }
+        original.unchangedEntries.asScala foreach { entry =>
+          original unchanged entry.name shouldBe entry
+        }
+        original.addedEntries.asScala foreach { entry =>
+          original added entry.name shouldBe entry
+        }
+        original.removedEntries.asScala foreach { entry =>
+          original removed entry.name shouldBe entry
+        }
+
         val store = memory
         encodeModel(store, original)
         utf8String(store) shouldBe json
