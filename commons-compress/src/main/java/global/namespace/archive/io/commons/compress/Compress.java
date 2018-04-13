@@ -19,7 +19,8 @@ import java.io.FileOutputStream;
 import static java.util.Objects.requireNonNull;
 
 /**
- * Provides access to JAR and ZIP files using Apache Commons Compress.
+ * Provides access to JAR and ZIP files.
+ * This package depends on Apache Commons Compress and provides best performance for diffing and patching.
  *
  * @author Christian Schlichtherle
  */

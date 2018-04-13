@@ -3,9 +3,9 @@
  * All rights reserved. Use is subject to license terms.
  */
 /**
- * Provides mutable Data Transfer Object (DTO) classes for use within delta archive files.
+ * Provides mutable Data Transfer Object (DTO) classes for delta archive files.
  *
- * @see global.namespace.archive.io.delta.model.DeltaModel
+ * @see global.namespace.archive.io.delta.dto.DeltaDTO
  * @author Christian Schlichtherle
  */
 package global.namespace.archive.io.delta.dto;

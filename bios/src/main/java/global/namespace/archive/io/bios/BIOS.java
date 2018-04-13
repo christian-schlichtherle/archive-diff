@@ -2,7 +2,7 @@
  * Copyright (C) 2013-2018 Schlichtherle IT Services.
  * All rights reserved. Use is subject to license terms.
  */
-package global.namespace.archive.io.juz;
+package global.namespace.archive.io.bios;
 
 import global.namespace.archive.io.api.ArchiveFileInput;
 import global.namespace.archive.io.api.ArchiveFileOutput;
@@ -20,13 +20,15 @@ import java.util.zip.ZipOutputStream;
 import static java.util.Objects.requireNonNull;
 
 /**
- * Provides access to JAR and ZIP files using the package {@code java.util.zip} (JUZ).
+ * Provides access to directories, JAR and ZIP files.
+ * This package depends on Java Runtime Environment (JRE) only.
+ * The abbreviation stands for Basic Input/Output System (pun intended).
  *
  * @author Christian Schlichtherle
  */
-public class JUZ {
+public class BIOS {
 
-    private JUZ() { }
+    private BIOS() { }
 
     /** Returns an archive file store for the given directory. */
     public static ArchiveFileStore<Path> directory(Path directory) {

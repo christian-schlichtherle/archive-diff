@@ -8,13 +8,13 @@ import java.io._
 import java.security.MessageDigest
 
 import global.namespace.archive.io.api.{ArchiveFileSource, ArchiveFileStore}
+import global.namespace.archive.io.bios.BIOS
+import global.namespace.archive.io.bios.BIOS._
 import global.namespace.archive.io.commons.compress.Compress
 import global.namespace.archive.io.delta.Delta._
 import global.namespace.archive.io.delta.dto.DeltaDTO
 import global.namespace.archive.io.delta.model.DeltaModel
-import global.namespace.archive.io.juz.JUZ.directory
 import global.namespace.archive.io.it.DiffAndPatchSpec._
-import global.namespace.archive.io.juz.JUZ
 import org.scalatest.Matchers._
 import org.scalatest.WordSpec
 import org.scalatest.prop.PropertyChecks._
@@ -59,8 +59,8 @@ private object DiffAndPatchSpec {
     "archive file store factory",
     Compress.jar,
     Compress.zip,
-    JUZ.jar,
-    JUZ.zip
+    BIOS.jar,
+    BIOS.zip
   )
 
   def withTempArchiveFile(test: ArchiveFileStore[_] => Any)(implicit factory: ArchiveFileStoreFactory[_]): Unit = {

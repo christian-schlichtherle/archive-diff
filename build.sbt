@@ -20,7 +20,7 @@ lazy val root: Project = project
   .in(file("."))
   .settings(releaseSettings)
   .settings(aggregateSettings)
-  .aggregate(api, commonsCompress, delta, it, juz)
+  .aggregate(api, bios, commonsCompress, delta, it)
   .settings(name := "Archive I/O")
 
 lazy val api: Project = project
@@ -32,6 +32,19 @@ lazy val api: Project = project
     ),
     name := "Archive I/O API",
     normalizedName := "archive-io-api"
+  )
+
+lazy val bios: Project = project
+  .in(file("bios"))
+  .settings(javaLibrarySettings)
+  .dependsOn(api)
+  .settings(
+    libraryDependencies ++= Seq(
+      FunIoBios,
+      Scalatest % Test
+    ),
+    name := "Archive I/O BIOS",
+    normalizedName := "archive-io-bios"
   )
 
 lazy val commonsCompress: Project = project
@@ -65,7 +78,7 @@ lazy val delta: Project = project
 lazy val it: Project = project
   .in(file("it"))
   .settings(javaLibrarySettings)
-  .dependsOn(commonsCompress, delta, juz)
+  .dependsOn(bios, commonsCompress, delta)
   .settings(
     libraryDependencies ++= Seq(
       Scalacheck % Test,
@@ -73,17 +86,4 @@ lazy val it: Project = project
     ),
     name := "Archive I/O IT",
     publishArtifact := false
-  )
-
-lazy val juz: Project = project
-  .in(file("juz"))
-  .settings(javaLibrarySettings)
-  .dependsOn(api)
-  .settings(
-    libraryDependencies ++= Seq(
-      FunIoBios,
-      Scalatest % Test
-    ),
-    name := "Archive I/O JUZ",
-    normalizedName := "archive-io-juz"
   )

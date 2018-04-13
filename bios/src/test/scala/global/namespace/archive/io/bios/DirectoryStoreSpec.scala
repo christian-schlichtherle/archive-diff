@@ -2,12 +2,13 @@
  * Copyright (C) 2013-2018 Schlichtherle IT Services.
  * All rights reserved. Use is subject to license terms.
  */
-package global.namespace.archive.io.juz
+package global.namespace.archive.io.bios
 
 import java.nio.file.Paths
 
 import org.scalatest.Matchers._
 import org.scalatest.WordSpec
+
 import scala.collection.JavaConverters._
 
 /** @author Christian Schlichtherle */

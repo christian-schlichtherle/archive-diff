@@ -6,8 +6,8 @@ This library features diffing and patching of archive files like EAR, JAR, WAR, 
 
 + An API for transparent access to archive files which is based on the API of [Fun I/O].
 + A facade for accessing JAR and ZIP files which depends on [Apache Commons Compress].
-+ Another facade for accessing JAR and ZIP files which depends on `java.util.jar` and `java.util.zip`.
-+ A facade for diffing and patching archive files.
++ Another facade for accessing JAR and ZIP files which depends on the Java Runtime Environment (JRE) only.
++ A facade for diffing and patching archive files or directories.
 
 ## Structure
 
@@ -21,17 +21,17 @@ The modules are:
 
 + `archive-io-api`: Provides an API for accessing archive files.
   The base package of this module is `global.namespace.archive.io.api`.
++ `archive-io-bios`: Implements the API and provides a facade for accessing directories, JAR and ZIP files.
+  This module depends on packages of the JRE only (not shown).
+  The base package of this module is `global.namespace.archive.io.bios`.
 + `archive-io-commons-compress`: Implements the API and provides a facade for accessing JAR and ZIP files.
   This module depends on Apache Commons Compress and provides best performance for diffing and patching.
   The base package of this module is `global.namespace.archive.io.commons.compress`.
-+ `archive-io-juz`: Implements the API and provides a facade for accessing JAR and ZIP files.
-  This module depends on the packages `java.util.jar` and `java.util.zip` (not shown).
-  The base package of this module is `global.namespace.archive.io.juz`.
-+ `archive-io-delta`: Provides a facade for diffing and patching archive files.
++ `archive-io-delta`: Provides a facade for diffing and patching archive files or directories.
   The base package of this module is `global.namespace.archive.io.delta`.
 
 Thus, for diffing and patching, your application needs to depend on the modules `archive-io-delta` and either
-`archive-io-commons-compress` or `archive-io-juz`.
+`archive-io-commons-compress` or `archive-io-bios`.
 
 ## Usage
 
@@ -53,20 +53,20 @@ File delta = ...;
 diff().base(jar(base)).update(jar(update)).to(jar(delta));
 ```
 
-If you wanted to use the `archive-io-juz` module instead of the `archive-io-commons-compress` module, then, apart from
+If you wanted to use the `archive-io-bios` module instead of the `archive-io-commons-compress` module, then, apart from
 configuring the class path, you would only have to edit the `import` statement as shown in the next example.
 
 ### Patching a JAR file with a delta JAR file to another JAR file
 
 The following code patches a JAR file with a delta JAR file to another JAR file.
-It uses the `JUZ` facade to access the JAR files using `java.util.jar`.
+It uses the `BIOS` facade to access the JAR files using the JRE.
 It also uses the `Delta` facade for the actual patching:
 
 ```java
 import java.io.File;
 
+import static global.namespace.archive.io.bios.BIOS.*;
 import static global.namespace.archive.io.delta.Delta.*;
-import static global.namespace.archive.io.juz.JUZ.*;
 
 File base = ...;
 File update = ...;
@@ -76,17 +76,18 @@ patch().base(jar(base)).delta(jar(delta)).to(jar(update));
 
 ### Diffing two directories and computing a delta model
 
-Maybe you just want to explore the delta of two directories, but not generate a delta archive file from that?
+Maybe you just want to examine the delta of two directories, but not generate a delta archive file or directory from 
+that?
 The following code diffs two directories and computes a delta model.
-Again, the `Delta` and the `JUZ` facades can be used to do that:
+Again, the `Delta` and the `BIOS` facades can be used to do that:
 
 ```java
 import java.io.File;
 
 import global.namespace.archive.io.delta.model.*;
 
+import static global.namespace.archive.io.bios.BIOS.*;
 import static global.namespace.archive.io.delta.Delta.*;
-import static global.namespace.archive.io.juz.JUZ.*;
 
 File base = ...;
 File update = ...;

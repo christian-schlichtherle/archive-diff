@@ -3,7 +3,7 @@
  * All rights reserved. Use is subject to license terms.
  */
 /**
- * Provides immutable model classes for use within delta archive files.
+ * Provides immutable model classes for delta archive files.
  *
  * @see global.namespace.archive.io.delta.model.DeltaModel
  * @author Christian Schlichtherle
