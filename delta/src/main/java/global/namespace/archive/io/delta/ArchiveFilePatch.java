@@ -62,7 +62,7 @@ abstract class ArchiveFilePatch<F, D, S> {
 
         void to(final ArchiveFileOutput<S> updateOutput) throws Exception {
             for (Predicate<String> filter : passFilters(updateOutput)) {
-                to(updateOutput, t -> !t.endsWith("/") && filter.test(t)); // exclude directories
+                to(updateOutput, filter);
             }
         }
 
@@ -133,17 +133,16 @@ abstract class ArchiveFilePatch<F, D, S> {
                 final void apply(final Collection<EntryNameAndDigestValue> collection) throws Exception {
                     for (final EntryNameAndDigestValue entryNameAndDigestValue : collection) {
                         final String name = entryNameAndDigestValue.name();
-                        if (!filter.test(name)) {
-                            continue;
-                        }
-                        final Optional<ArchiveEntrySource<E>> entry = input().source(name);
-                        try {
-                            copy(
-                                    entry.orElseThrow(() -> ioException(new MissingArchiveEntryException(name))),
-                                    new MyArchiveEntrySink(entryNameAndDigestValue)
-                            );
-                        } catch (WrongMessageDigestException e) {
-                            throw ioException(e);
+                        if (filter.test(name)) {
+                            final Optional<ArchiveEntrySource<E>> entry = input().source(name);
+                            try {
+                                copy(
+                                        entry.orElseThrow(() -> ioException(new MissingArchiveEntryException(name))),
+                                        new MyArchiveEntrySink(entryNameAndDigestValue)
+                                );
+                            } catch (WrongMessageDigestException e) {
+                                throw ioException(e);
+                            }
                         }
                     }
                 }

@@ -59,20 +59,36 @@ abstract class ArchiveFileDiff<F, S, D> {
 
         abstract ArchiveFileInput<S> updateInput();
 
-        DeltaModel toModel() throws Exception { return new Assembler().walkAndReturn(new Assembly()).deltaModel(); }
+        void to(final ArchiveFileOutput<D> deltaOutput) throws Exception {
 
-        class Assembler {
+            final class Streamer {
 
-            /**
-             * Walks the given assembly through the two archive files and returns it.
-             * If and only if the assembly throws an I/O exception, the assembler stops the visit and passes it on to
-             * the caller.
-             */
-            Assembly walkAndReturn(final Assembly assembly) throws Exception {
-                for (final ArchiveEntrySource<F> baseEntry : baseInput()) {
-                    if (baseEntry.isDirectory()) {
-                        continue;
+                private final DeltaModel model = toModel();
+
+                private Streamer() throws Exception { encodeModel(deltaOutput, model); }
+
+                private void stream() throws Exception {
+                    for (final ArchiveEntrySource<S> updateEntry : updateInput()) {
+                        final String name = updateEntry.name();
+                        if (changedOrAdded(name)) {
+                            updateEntry.copyTo(deltaOutput.sink(name));
+                        }
                     }
+                }
+
+                private boolean changedOrAdded(String name) {
+                    return null != model.changed(name) || null != model.added(name);
+                }
+            }
+
+            new Streamer().stream();
+        }
+
+        DeltaModel toModel() throws Exception {
+            final Assembly assembly = new Assembly();
+
+            for (final ArchiveEntrySource<F> baseEntry : baseInput()) {
+                if (!baseEntry.isDirectory()) {
                     final Optional<ArchiveEntrySource<S>> updateEntry = updateInput().source(baseEntry.name());
                     if (updateEntry.isPresent()) {
                         assembly.visitEntriesInBothFiles(baseEntry, updateEntry.get());
@@ -80,19 +96,18 @@ abstract class ArchiveFileDiff<F, S, D> {
                         assembly.visitEntryInBaseFile(baseEntry);
                     }
                 }
+            }
 
-                for (final ArchiveEntrySource<S> updateEntry : updateInput()) {
-                    if (updateEntry.isDirectory()) {
-                        continue;
-                    }
+            for (final ArchiveEntrySource<S> updateEntry : updateInput()) {
+                if (!updateEntry.isDirectory()) {
                     final Optional<ArchiveEntrySource<F>> baseEntry = baseInput().source(updateEntry.name());
                     if (!baseEntry.isPresent()) {
                         assembly.visitEntryInUpdateFile(updateEntry);
                     }
                 }
-
-                return assembly;
             }
+
+            return assembly.deltaModel();
         }
 
         /**
@@ -166,31 +181,6 @@ abstract class ArchiveFileDiff<F, S, D> {
                 updateDigestFrom(digest, source);
                 return valueOf(digest);
             }
-        }
-
-        void to(final ArchiveFileOutput<D> deltaOutput) throws Exception {
-
-            final class Streamer {
-
-                private final DeltaModel model = toModel();
-
-                private Streamer() throws Exception { encodeModel(deltaOutput, model); }
-
-                private void stream() throws Exception {
-                    for (final ArchiveEntrySource<S> updateEntry : updateInput()) {
-                        final String name = updateEntry.name();
-                        if (changedOrAdded(name)) {
-                            updateEntry.copyTo(deltaOutput.sink(name));
-                        }
-                    }
-                }
-
-                private boolean changedOrAdded(String name) {
-                    return null != model.changed(name) || null != model.added(name);
-                }
-            }
-
-            new Streamer().stream();
         }
     }
 }
