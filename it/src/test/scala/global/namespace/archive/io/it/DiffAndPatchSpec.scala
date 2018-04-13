@@ -12,7 +12,7 @@ import global.namespace.archive.io.commons.compress.Compress
 import global.namespace.archive.io.delta.Delta._
 import global.namespace.archive.io.delta.dto.DeltaDTO
 import global.namespace.archive.io.delta.model.DeltaModel
-import global.namespace.archive.io.dir.Dir.directory
+import global.namespace.archive.io.juz.JUZ.directory
 import global.namespace.archive.io.it.DiffAndPatchSpec._
 import global.namespace.archive.io.juz.JUZ
 import org.scalatest.Matchers._

@@ -11,6 +11,7 @@ import global.namespace.fun.io.api.Socket;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.nio.file.Path;
 import java.util.jar.JarOutputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
@@ -26,6 +27,14 @@ import static java.util.Objects.requireNonNull;
 public class JUZ {
 
     private JUZ() { }
+
+    /** Returns an archive file store for the given directory. */
+    public static ArchiveFileStore<Path> directory(Path directory) {
+        return new DirectoryStore(requireNonNull(directory));
+    }
+
+    /** Returns an archive file store for the given directory. */
+    public static ArchiveFileStore<Path> directory(File directory) { return directory(directory.toPath()); }
 
     /** Returns an archive file store for the given JAR file. */
     public static ArchiveFileStore<ZipEntry> jar(final File file) {

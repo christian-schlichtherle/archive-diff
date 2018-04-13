@@ -56,9 +56,9 @@ diff().base(jar(base)).update(jar(update)).to(jar(delta));
 If you wanted to use the `archive-io-juz` module instead of the `archive-io-commons-compress` module, then, apart from
 configuring the class path, you would only have to edit the `import` statement as shown in the next example.
 
-### Patching a JAR file from a delta JAR file to another JAR file
+### Patching a JAR file with a delta JAR file to another JAR file
 
-The following code patches a JAR file from a delta JAR file to another JAR file.
+The following code patches a JAR file with a delta JAR file to another JAR file.
 It uses the `JUZ` facade to access the JAR files using `java.util.jar`.
 It also uses the `Delta` facade for the actual patching:
 
@@ -74,11 +74,11 @@ File delta = ...;
 patch().base(jar(base)).delta(jar(delta)).to(jar(update));
 ```
 
-### Diffing two ZIP files and computing a delta model
+### Diffing two directories and computing a delta model
 
-Maybe you just want to explore the delta of two archive files, but not generate another archive file from that?
-The following code diffs two ZIP files and computes a delta model.
-Again, the `Delta` and either the `JUZ` or `Compress` facades can be used to do that:
+Maybe you just want to explore the delta of two directories, but not generate a delta archive file from that?
+The following code diffs two directories and computes a delta model.
+Again, the `Delta` and the `JUZ` facades can be used to do that:
 
 ```java
 import java.io.File;
@@ -90,7 +90,7 @@ import static global.namespace.archive.io.juz.JUZ.*;
 
 File base = ...;
 File update = ...;
-DeltaModel model = diff().base(zip(base)).update(zip(update)).toModel();
+DeltaModel model = diff().base(directory(base)).update(directory(update)).toModel();
 ```
 
 The delta model has properties describing the changed, unchanged, added and removed entries.

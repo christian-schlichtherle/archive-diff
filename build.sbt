@@ -20,7 +20,7 @@ lazy val root: Project = project
   .in(file("."))
   .settings(releaseSettings)
   .settings(aggregateSettings)
-  .aggregate(api, commonsCompress, delta, dir, it, juz)
+  .aggregate(api, commonsCompress, delta, it, juz)
   .settings(name := "Archive I/O")
 
 lazy val api: Project = project
@@ -62,23 +62,10 @@ lazy val delta: Project = project
     normalizedName := "archive-io-delta"
   )
 
-lazy val dir: Project = project
-  .in(file("dir"))
-  .settings(javaLibrarySettings)
-  .dependsOn(api)
-  .settings(
-    libraryDependencies ++= Seq(
-      FunIoBios,
-      Scalatest % Test
-    ),
-    name := "Archive I/O Dir",
-    normalizedName := "archive-io-dir"
-  )
-
 lazy val it: Project = project
   .in(file("it"))
   .settings(javaLibrarySettings)
-  .dependsOn(commonsCompress, delta, dir, juz)
+  .dependsOn(commonsCompress, delta, juz)
   .settings(
     libraryDependencies ++= Seq(
       Scalacheck % Test,
@@ -94,7 +81,8 @@ lazy val juz: Project = project
   .dependsOn(api)
   .settings(
     libraryDependencies ++= Seq(
-      FunIoBios
+      FunIoBios,
+      Scalatest % Test
     ),
     name := "Archive I/O JUZ",
     normalizedName := "archive-io-juz"
