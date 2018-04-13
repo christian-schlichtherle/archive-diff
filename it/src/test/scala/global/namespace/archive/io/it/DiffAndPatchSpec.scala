@@ -12,7 +12,7 @@ import global.namespace.archive.io.commons.compress.Compress
 import global.namespace.archive.io.delta.Delta._
 import global.namespace.archive.io.delta.dto.DeltaDTO
 import global.namespace.archive.io.delta.model.DeltaModel
-import global.namespace.archive.io.dir.Dir
+import global.namespace.archive.io.dir.Dir.directory
 import global.namespace.archive.io.it.DiffAndPatchSpec._
 import global.namespace.archive.io.juz.JUZ
 import org.scalatest.Matchers._
@@ -51,7 +51,7 @@ private object DiffAndPatchSpec {
   type ArchiveFileStoreFactory[E] = File => ArchiveFileStore[E]
 
   def forAllArchiveFiles(test: (ArchiveFileSource[_], ArchiveFileSource[_]) => ArchiveFileStoreFactory[_] => Any): Unit = {
-    test(Dir.dir(deltaModelDirectory), Dir.dir(deltaDtoDirectory))(Dir.dir)
+    test(directory(deltaModelDirectory), directory(deltaDtoDirectory))(directory)
     forAll(Factories)(factory => test(factory(Test1JarFile), factory(Test2JarFile))(factory))
   }
 
