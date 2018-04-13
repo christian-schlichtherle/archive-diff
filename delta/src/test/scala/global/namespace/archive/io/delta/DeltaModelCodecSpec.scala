@@ -8,7 +8,7 @@ import java.nio.charset.Charset
 import java.security.MessageDigest
 
 import global.namespace.archive.io.delta.Delta._
-import global.namespace.archive.io.delta.DeltaSpec._
+import global.namespace.archive.io.delta.DeltaModelCodecSpec._
 import global.namespace.archive.io.delta.model.{DeltaModel, EntryNameAndDigestValue, EntryNameAndTwoDigestValues}
 import global.namespace.fun.io.api.Store
 import global.namespace.fun.io.bios.BIOS.memoryStore
@@ -19,7 +19,7 @@ import org.scalatest.prop.PropertyChecks._
 import scala.collection.JavaConverters._
 
 /** @author Christian Schlichtherle */
-class DeltaSpec extends WordSpec {
+class DeltaModelCodecSpec extends WordSpec {
 
   "A delta model" should {
     "support round-trip encoding/decoding to/from JSON" in {
@@ -36,7 +36,7 @@ class DeltaSpec extends WordSpec {
   }
 }
 
-private object DeltaSpec {
+private object DeltaModelCodecSpec {
 
   import DeltaModel.{builder => b}
   val TestCases = Table(
